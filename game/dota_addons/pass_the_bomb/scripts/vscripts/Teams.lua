@@ -1,10 +1,10 @@
 Teams = {}
 
 Teams.Colors = {
-	nil,                   -- unused teams
-	nil, -- Vector(46, 106, 230),  -- Player 1
-	Vector(93, 230, 173),  -- Player 2
 	nil, nil,              -- unused teams
+	Vector(46, 106, 230),  -- Player 1
+	nil, nil,              -- unused teams
+	Vector(93, 230, 173),  -- Player 2
 	Vector(173, 0, 173),   -- Player 3
 	Vector(220, 217, 10),  -- Player 4
 	Vector(230, 98, 0),    -- Player 5
@@ -16,6 +16,8 @@ Teams.Colors = {
 }
 
 Teams.TeamIDs = {
+-- For some reason, lots of things break when not all players change teams.
+-- So we disable the radiant team after team selection. There I fixed it.
 --	DOTA_TEAM_GOODGUYS,
 	DOTA_TEAM_BADGUYS,
 	DOTA_TEAM_CUSTOM_1,

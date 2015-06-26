@@ -146,13 +146,18 @@ function PTB:EndRound()
 		Say( nil, alive[ 1 ].Name .. " wins this one, next match in " .. PTB.NewMatchTime .. " seconds", false )
 
 		alive[ 1 ].Points = alive[ 1 ].Points + 1
+	elseif #alive == 0 then
+		Say( nil, "You all died, that's pretty sad...", false )
+		Say( nil, "Next match in " .. PTB.NewMatchTime .. " seconds.", false )
+	end
 
+	if #alive <= 1 then
 		Timers:CreateTimer( ( PTB.NewMatchTime - PTB.NewRoundTime ), function() 
 			GameRules:SetHeroRespawnEnabled( true )
 
 			for _,p in pairs( PTB:DeadPlayers() ) do
 				if p.State == Player.STATE_CONNECTED then
-					--p.Hero:RespawnHero( false, false, false )
+					--p.Hero:RespawnHero( false, false, false ) -- Why does this crash the map?
 					p.Hero:RespawnUnit()
 				end
 			end
@@ -366,12 +371,9 @@ function PTB:EventStateChanged( event )
 				end
 			end
 		end )
-
-
+		
 		Say( nil, "First round starts in 30 seconds, get ready.", false )
 	elseif state == DOTA_GAMERULES_STATE_GAME_IN_PROGRESS then
-		
-
 		PTB:BeginRound( true )
 	end
 end
