@@ -47,7 +47,11 @@ function PTB:Init()
 	ListenToGameEvent( 'npc_spawned',         Dynamic_Wrap( self, 'EventNPCSpawned' ),         self )
 
 	-- Game rules
-	GameRules:SetCustomGameTeamMaxPlayers( DOTA_TEAM_GOODGUYS, 10 )
+	if ConVars:GetInt( "sv_cheats" ) == 1 then
+		GameRules:SetCustomGameTeamMaxPlayers( DOTA_TEAM_GOODGUYS, 10 ) -- For dota_create_fake_clients
+	else
+		GameRules:SetCustomGameTeamMaxPlayers( DOTA_TEAM_GOODGUYS, 9 )
+	end
 	GameRules:SetCustomGameTeamMaxPlayers( DOTA_TEAM_BADGUYS, 0 )
 	GameRules:SetCustomVictoryMessage( "Boom! Hahahaha" )
 	GameRules:SetHideKillMessageHeaders( true )
@@ -227,7 +231,7 @@ function PTB:FindPlayer( search )
 		end
 	end
 
-	print( "Search failed to find a player, creating one.")
+	-- print( "Search failed to find a player, creating one.")
 	return Player()
 end
 
@@ -242,7 +246,8 @@ end
 function PTB:RegisterPlayer( player )
 	if not PTB.Players then PTB.Players = {} end
 
-	PTB.Players[ #PTB.Players + 1 ] = player
+	print( "Registering player #" .. player.ID )
+	PTB.Players[ player.ID ] = player
 end
 
 function PTB:ReturningPlayer( player )
@@ -264,7 +269,7 @@ function PTB:ExplodePlayer( player, ability, caster )
 	if not IsValidEntity( target ) then return end
 
 	print( target.Player.Name .. " goes asplodey" )
-	
+
 	local ability = target:FindAbilityByName( "techies_explode" )
 	ability:SetLevel( 1 )
 	ability:CastAbility()
@@ -345,25 +350,28 @@ end
 function PTB:EventStateChanged( event )
 	print( "PTB:EventStateChanged" )
 	local state = GameRules:State_Get()
-	print( "State: " .. state )
+	--print( state )
 
-	if state == DOTA_GAMERULES_STATE_PRE_GAME then
-		Timers:CreateTimer( 3, function()
-			CustomGameEventManager:Send_ServerToAllClients( "teams_changed", { } )
-			Teams:Init()
-
+	if state == DOTA_GAMERULES_STATE_INIT then
+	elseif state == DOTA_GAMERULES_STATE_HERO_SELECTION then
+		
+	elseif state == DOTA_GAMERULES_STATE_PRE_GAME then
+		Timers:CreateTimer(4, function()
 			if PTB.Type == PTB.TYPE_FFA then
-				local i = 1
-				for _,p in pairs( PTB.Players ) do
-					print( "FFA: ", i, Teams.TeamIDs[ i ] )
-					p:SetTeam( Teams.TeamIDs[ i ] )
-					i = i + 1
+				Teams:Init()
+				CustomGameEventManager:Send_ServerToAllClients( "teams_changed", { } )
+
+				for _, p in pairs( PTB.Players ) do
+					p:SetTeam( Teams.TeamIDs[ p.ID + 1 ] )
 				end
 			end
 		end )
 
+
 		Say( nil, "First round starts in 30 seconds, get ready.", false )
 	elseif state == DOTA_GAMERULES_STATE_GAME_IN_PROGRESS then
+		
+
 		PTB:BeginRound( true )
 	end
 end

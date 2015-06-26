@@ -14,30 +14,23 @@ function Player:OnConnect( event )
 		return
 	end
 
+	self:Validate( event )
+
 	if self.Reconnecting then
 		self.Reconnecting = nil
 
 		print( "Player " .. self.Name .. " returns to the fray." )
 
 		PTB:ReturningPlayer( self )
-	else
-		self.Index = event.index
-		self.UserID = event.userid
-
-		local id = self.Entity:GetPlayerID()
-		print( "PlayerID: " .. id )
-		if id > -1 then
-			self.ID = id
-		end
-
-		PTB:RegisterPlayer( self )
 	end
 end
 
 function Player:OnDisconnect( event )
+	self:Validate( event )
+
 	print( "Player " .. self.Name .. " left the game." )
 
-	if IsValidEntity( self.Entity:GetAssignedHero() ) then
+	if IsValidEntity( self.Entity ) and IsValidEntity( self.Entity:GetAssignedHero() ) then
 		PTB:ExplodePlayer( self, self.Hero:FindAbilityByName( "techies_pass_the_bomb" ), self )
 	end
 
@@ -60,23 +53,11 @@ function Player:OnSpawn( event )
 	print( "Player " .. self.Name .. " is spawning." )
 
 	self.Hero = EntIndexToHScript( event.entindex )
+	self:Validate( event )
 
 	self.Hero:SetAngles( 0, math.random(360), 0 )
+	self:InitTeam()
 
-	if not IsValidEntity( self.Entity ) then
-		self.Entity = self.Hero:GetPlayerOwner()
-		if not IsValidEntity( self.Entity ) then
-			error( "Player has spawned without a proper entity, this is a bad thing(tm)" )
-		else
-			local id = self.Entity:GetPlayerID()
-			print( "PlayerID:", id )
-			if id > -1 then
-				self.ID = id
-			end
-		end
-	end
-
-	self.Hero.Player = self
 	self.Hero:SetAbilityPoints( 0 )
 
 	local ability = self.Hero:FindAbilityByName( "techies_blink" )
@@ -86,38 +67,56 @@ function Player:OnSpawn( event )
 end
 
 function Player:OnJoinTeam( event )
-	if not self.UserID and event.userid then
-		self.UserID = event.userid
-
-		PTB:RegisterPlayer( self )
-	end
-
-	if self.Entity then
-		local id = self.Entity:GetPlayerID()
-		if id > -1 then
-			self.ID = id
-		end
-		print( "PlayerID:", id )
-	end
-
-	if event.name and not self.Name then
-		self.Name = event.name
-	end
+	self:Validate( event )
 
 	print( "Player " .. self.Name .. " joins team " .. event.team .. "." )
 end
 
+function Player:InitTeam()
+	local id = PlayerResource:GetCustomTeamAssignment( self.ID )
+	self:SetTeam( id )
+end
+
 function Player:SetTeam( teamid )
-	if self.ID then
-		local curteam = PlayerResource:GetCustomTeamAssignment( self.ID )
-		if curteam ~= teamid then
-			PlayerResource:SetCustomTeamAssignment( self.ID, teamid )
-			local col = Teams.Colors[ teamid + 1 ]
-			PlayerResource:SetCustomPlayerColor( self.ID, col[ 1 ], col[ 2 ], col[ 3 ] )
-		end
+	if not teamid then return end
+
+	local id = PlayerResource:GetCustomTeamAssignment( self.ID )
+	if id ~= teamid then
+		print( "Setting player " .. self.ID .. " from team " .. id .. " to " .. teamid )
+		PlayerResource:SetCustomTeamAssignment( self.ID, teamid )
 	end
 
+	self.Team = PlayerResource:GetCustomTeamAssignment( self.ID )
+
 	if IsValidEntity( self.Hero ) then
-		self.Hero:SetTeam( teamid )
+		self.Hero:SetTeam( self.Team )
 	end
+
+	if Teams.Colors[ teamid ] then
+		local col = Teams.Colors[ teamid ]
+		PlayerResource:SetCustomPlayerColor( self.ID, col[ 1 ], col[ 2 ], col[ 3 ] )
+	end
+end
+
+function Player:Validate( event )
+	local oldid = self.ID or nil
+
+	if event then
+		if not self.UserID and event.userid then self.UserID = event.userid end
+		if not self.Name and event.name then self.Name = event.name end
+	end
+
+	if self.Entity then
+		if not self.ID then 
+			local id = self.Entity:GetPlayerID()
+			if id >= 0 then self.ID = id end
+		end
+	end
+	if self.Hero then
+		if not self.Entity then self.Entity = self.Hero:GetPlayerOwner() end
+		if not self.Hero.Player then self.Hero.Player = self end
+	end
+	if not self.ID and self.UserID then self.ID = self.UserID - 1 end
+
+	if oldid ~= self.ID then PTB:RegisterPlayer( self ) end
 end

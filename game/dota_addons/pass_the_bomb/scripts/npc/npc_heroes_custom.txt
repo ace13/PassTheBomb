@@ -3,6 +3,7 @@
 	"npc_dota_hero_techies_ptb"
 	{
 		"override_hero" "npc_dota_hero_techies"
+		
 		"AbilityLayout" "4"
 		"Ability1"      "techies_blink"
 		"Ability2"      "techies_pass_the_bomb"

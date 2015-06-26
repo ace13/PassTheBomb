@@ -1,10 +1,10 @@
 Teams = {}
 
 Teams.Colors = {
-	nil, nil,              -- 0, 1, unused teams
-	Vector(46, 106, 230),  -- Player 1
+	nil,                   -- unused teams
+	nil, -- Vector(46, 106, 230),  -- Player 1
 	Vector(93, 230, 173),  -- Player 2
-	nil, nil,              -- 4, 5, unused teams
+	nil, nil,              -- unused teams
 	Vector(173, 0, 173),   -- Player 3
 	Vector(220, 217, 10),  -- Player 4
 	Vector(230, 98, 0),    -- Player 5
@@ -16,7 +16,16 @@ Teams.Colors = {
 }
 
 Teams.TeamIDs = {
-	2, 3, 6, 7, 8, 9, 10, 11, 12, 13
+--	DOTA_TEAM_GOODGUYS,
+	DOTA_TEAM_BADGUYS,
+	DOTA_TEAM_CUSTOM_1,
+	DOTA_TEAM_CUSTOM_2, 
+	DOTA_TEAM_CUSTOM_3, 
+	DOTA_TEAM_CUSTOM_4, 
+	DOTA_TEAM_CUSTOM_5,
+	DOTA_TEAM_CUSTOM_6,
+	DOTA_TEAM_CUSTOM_7,
+	DOTA_TEAM_CUSTOM_8,
 }
 
 Teams.Inited = false
@@ -25,10 +34,8 @@ function Teams:Init()
 	if Teams.Inited then return end
 	Teams.Inited = true
 
-	for i = 0, DOTA_TEAM_COUNT - 1 do
-		if Teams.Colors[ i + 1 ] then
-			GameRules:SetCustomGameTeamMaxPlayers( i, 1 )
-			SetTeamCustomHealthbarColor( i, Teams.Colors[ i + 1 ][ 1 ], Teams.Colors[ i + 1 ][ 2 ], Teams.Colors[ i + 1 ][ 3 ] )
-		end
+	for _,t in pairs( Teams.TeamIDs ) do
+		GameRules:SetCustomGameTeamMaxPlayers( t, 10 )
+		SetTeamCustomHealthbarColor( t, Teams.Colors[ t ][ 1 ], Teams.Colors[ t ][ 2 ], Teams.Colors[ t ][ 3 ] )
 	end
 end
