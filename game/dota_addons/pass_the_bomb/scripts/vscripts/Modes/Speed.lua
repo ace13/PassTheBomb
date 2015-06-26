@@ -9,9 +9,7 @@ function Mode:Init()
 
 		if IsValidEntity( hero ) then
 			if not hero.BaseMoveSpeed then hero.BaseMoveSpeed = hero:GetBaseMoveSpeed() end
-			
-			-- hero:AddNewModifier( hero, nil, "modifier_bloodseeker_thirst_speed", { bonus_movement_speed = 40 })
-			hero:SetBaseMoveSpeed( 2048 )
+			hero:SetBaseMoveSpeed( 760 )
 		end
 	end
 end

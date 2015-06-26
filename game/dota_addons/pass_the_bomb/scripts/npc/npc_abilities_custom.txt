@@ -3,47 +3,170 @@
 {
 	"Version"		"1"
 
-	//=================================================================================================================
-	// Templar Assassin: Refraction Holdout
-	//=================================================================================================================
-	"templar_assassin_refraction_holdout"
+	"techies_blink"
 	{
-		// General
-		//-------------------------------------------------------------------------------------------------------------
-		"AbilityBehavior"				"DOTA_ABILITY_BEHAVIOR_NO_TARGET | DOTA_ABILITY_BEHAVIOR_IMMEDIATE"
-		"AbilityUnitDamageType"			"DAMAGE_TYPE_PHYSICAL"	
+		"BaseClass"          "ability_datadriven"
+		"AbilityBehavior"    "DOTA_ABILITY_BEHAVIOR_POINT"
+		"AbilityTextureName" "antimage_blink"
 
-		// Casting
-		//-------------------------------------------------------------------------------------------------------------
-		"AbilityCastPoint"				"0.0 0.0 0.0 0.0"
+		"precache"
+		{
+			"soundfile"     "soundevents/game_sounds_heroes/game_sounds_antimage.vsndevts"
+			"particle"      "particles/units/heroes/hero_antimage/antimage_blink_end.vpcf"
+			"particle"      "particles/units/heroes/hero_antimage/antimage_blink_start.vpcf"
+		}
 
-		// Time		
-		//-------------------------------------------------------------------------------------------------------------
-		"AbilityCooldown"				"17.0 17.0 17.0 17.0"
-
-		// Cost
-		//-------------------------------------------------------------------------------------------------------------
-		"AbilityManaCost"				"100"
+		"AbilityCastPoint" "0.0"
+		"AbilityCooldown"  "12.0 4.0"
+		"MaxLevel"         "2"
+		"RequiredLevel"    "0"
 		
-		// Special
-		//-------------------------------------------------------------------------------------------------------------
 		"AbilitySpecial"
 		{
 			"01"
 			{
-				"var_type"					"FIELD_INTEGER"
-				"damage_absorb"				"200 300 400 500"
-			}
-			"02"
-			{
-				"var_type"					"FIELD_INTEGER"
-				"bonus_damage"				"20 40 60 80"
-			}
-			"04"
-			{
-				"var_type"					"FIELD_FLOAT"
-				"duration"					"17.0 17.0 17.0 17.0"
+				"var_type"    "FIELD_INTEGER"
+				"blink_range" "1000 2048"
 			}
 		}
+
+		"OnSpellStart"
+		{
+			"RunScript"
+			{
+				"ScriptFile"    "scripts/vscripts/Abilities/Blink.lua"
+				"Function"      "Blink"
+				"Target"        "POINT"
+			}
+
+			"FireSound"
+			{
+				"EffectName"    "Hero_Antimage.Blink_out"
+				"Target"        "CASTER"
+			}
+
+			"AttachEffect"
+			{
+				"EffectName"    "particles/units/heroes/hero_antimage/antimage_blink_start.vpcf"
+				"Target"        "CASTER"
+				"EffectAttachType" "attach_hitloc"
+			}
+
+			"FireSound"
+			{
+				"EffectName"    "Hero_Antimage.Blink_in"
+				"Target"        "CASTER"
+			}
+
+			"AttachEffect"
+			{
+				"EffectName"    "particles/units/heroes/hero_antimage/antimage_blink_end.vpcf"
+				"Target"        "CASTER"
+				"EffectAttachType" "follow_origin"
+			}
+		}
+	}
+
+	"techies_pass_the_bomb"
+	{
+		"BaseClass"             "ability_datadriven"
+		"AbilityBehavior"       "DOTA_ABILITY_BEHAVIOR_UNIT_TARGET"
+		"AbilityTextureName"    "techies_remote_mines"
+		"AbilityUnitTargetTeam" "DOTA_UNIT_TARGET_TEAM_BOTH"
+		"AbilityUnitTargetType" "DOTA_UNIT_TARGET_HERO"
+
+		"AbilityType"           "DOTA_ABILITY_TYPE_BASIC"
+		"MaxLevel"              "2"
+		"RequiredLevel"         "0"
+
+		"AbilityCastPoint"      "0.0"
+		"AbilityCastAnimation"  "ACT_DOTA_CAST_ABILITY_5"
+		"AbilityCastRange"      "700 2048"
+		"AbilityCooldown"       "10000"
+
+		"precache"
+		{
+			"soundfile"         "soundevents/game_sounds_heroes/game_sounds_techies.vsndevts"
+			"particle"          "particles/units/heroes/hero_skeletonking/skeletonking_hellfireblast.vpcf"
+			"particle"          "particles/units/heroes/hero_sven/sven_storm_bolt_projectile_explosion.vpcf"
+		}
+
+		"AbilitySpecial"
+		{
+			"01"
+			{
+				"var_type"      "FIELD_FLOAT"
+				"throw_speed"   "650 1024"
+			}
+
+			"02"
+			{
+				"var_type"      "FIELD_FLOAT"
+				"vision_range"  "100"
+			}
+		}
+
+		"OnSpellStart"
+		{
+			"FireSound"
+			{
+				"EffectName"    "Hero_Techies.RemoteMine.Toss"
+				"Target"        "CASTER"
+			}
+
+			"TrackingProjectile"
+			{
+				"Target"            "TARGET"
+				"EffectName"        "particles/units/heroes/hero_skeletonking/skeletonking_hellfireblast.vpcf"
+				"Dodgeable"         "1"
+				"ProvidesVision"    "0"
+				"VisionRadius"      "0"
+				"MoveSpeed"         "%throw_speed"
+				"SourceAttachment"  "DOTA_PROJECTILE_ATTACHMENT_ATTACK_2"
+			}
+		}
+
+		"OnProjectileHitUnit"
+		{
+			"DeleteOnHit"          "1"
+
+			"FireEffect"
+			{
+				"EffectName"       "particles/units/heroes/hero_sven/sven_storm_bolt_projectile_explosion.vpcf"
+				"EffectAttachType" "attach_origin"
+				"Target"           "TARGET"
+				"ControlPointEntities"
+				{
+					"TARGET"       "attach_origin"
+					"TARGET"       "attach_origin"
+					"TARGET"       "attach_origin"
+					"TARGET"       "attach_origin" //CP3 has a child explosion origin
+				}
+			}
+
+			"RunScript"
+			{
+				"ScriptFile"    "scripts/vscripts/Abilities/PassTheBomb.lua"
+				"Function"      "PassTheBomb"
+				"Target"        "TARGET"
+			}
+		}
+
+		"OnProjectileFinish"
+		{
+			"RunScript"
+			{
+				"ScriptFile"    "scripts/vscripts/Abilities/PassTheBomb.lua"
+				"Function"      "Refresh"
+				"Target"        "CASTER"
+			}
+		}
+	}
+
+	"techies_invis"
+	{
+		"BaseClass"             "ability_datadriven"
+		"AbilityBehavior"       "DOTA_ABILITY_BEHAVIOR_HIDDEN"
+		"AbilityType"           "DOTA_ABILITY_TYPE_BASIC"
 	}
 }

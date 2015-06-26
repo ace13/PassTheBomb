@@ -6,6 +6,8 @@ function Precache( context )
 	-- Explosions
 	-- PrecacheResource( "soundfile", "*.vsndevts", context )
 	-- PrecacheResource( "particle", "*.vpcf", context )
+
+	PrecacheResource( "model", "models/heroes/techies/fx_techies_remotebomb.vmdl", context )
 end
 
 -- Create the game mode when we activate

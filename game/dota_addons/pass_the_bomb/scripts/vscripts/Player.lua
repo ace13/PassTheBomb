@@ -54,22 +54,27 @@ function Player:OnSpawn( event )
 	print( "Player " .. self.Name .. " is spawning." )
 
 	self.Hero = EntIndexToHScript( event.entindex )
+
+	self.Hero:SetAngles( 0, math.random(360), 0 )
+
+	if not IsValidEntity( self.Entity ) then
+		self.Entity = self.Hero:GetPlayerOwner()
+		if not IsValidEntity( self.Entity ) then
+			error( "Player has spawned without a proper entity, this is a bad thing(tm)" )
+		else
+			local id = self.Entity:GetPlayerID()
+			if id ~= 1 then
+				self.ID = id
+				self.SteamID = PlayerResource:GetSteamAccountID( self.ID )
+			end
+		end
+	end
+
 	self.Hero.Player = self
-
-	-- FIXME: Be data driven instead
-	fixme( "Create data-driven abilities" )
-
-	self.Hero:AddAbility( "antimage_blink" )
-	local ability = self.Hero:FindAbilityByName( "antimage_blink" )
-	ability:SetLevel( 4 )
-
-	self.Hero:SwapAbilities( "techies_land_mines", "antimage_blink", false, true )
-
-
-	
+	self.Hero:SetAbilityPoints( 0 )
 
 	--[[
-	for i = 0, 15 do
+	for i = 2, 5 do
 		local ability = self.Hero:GetAbilityByIndex( i )
 
 		if ability then 
@@ -77,12 +82,22 @@ function Player:OnSpawn( event )
 		end
 	end
 	]]
+
+	local ability = self.Hero:FindAbilityByName( "techies_blink" )
+	ability:SetLevel( 1 )
+
+	local ability = self.Hero:FindAbilityByName( "techies_pass_the_bomb" )
 end
 
 function Player:OnJoinTeam( event )
+	if not self.UserID and event.userid then
+		self.UserID = event.userid
+
+		PTB:RegisterPlayer( self )
+	end
+
 	if event.name and not self.Name then
 		self.Name = event.name
-		self.IsBot = event.isbot
 	end
 
 	print( "Player " .. self.Name .. " joins team " .. event.team .. "." )
