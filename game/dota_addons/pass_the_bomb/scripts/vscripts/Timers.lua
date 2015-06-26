@@ -1,7 +1,6 @@
 TIMERS_THINK = 0.01
 
 if Timers == nil then
-  print ( '[Timers] creating Timers' )
   Timers = {}
   Timers.__index = Timers
 end
@@ -16,7 +15,7 @@ function Timers:start()
   Timers = self
   self.timers = {}
   
-  local ent = Entities:CreateByClassname("info_target") -- Entities:FindByClassname(nil, 'CWorld')
+  local ent = Entities:FindByName( nil, "bomb_spawn" )
   ent:SetThink("Think", self, "timers", TIMERS_THINK)
 end
 

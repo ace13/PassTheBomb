@@ -1,8 +1,8 @@
 "AddonInfo"
 {
-	maps         "template_map"
+	maps         "ptb_summer"
 	"IsPlayable" "1"
-	"template_map"
+	"ptb_summer"
 	{
 		"MaxPlayers" "10"
 	}

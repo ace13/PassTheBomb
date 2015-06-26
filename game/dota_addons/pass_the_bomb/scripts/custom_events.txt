@@ -1,0 +1,6 @@
+"CustomEvents"
+{
+	"teams_changed"
+	{
+	}
+}

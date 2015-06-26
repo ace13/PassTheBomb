@@ -1,5 +1,7 @@
 require( "Util" )
 require( "PTB" )
+require( "Teams" )
+
 
 -- Precache things that need to be precached
 function Precache( context )
@@ -14,10 +16,22 @@ end
 function Activate()
 	print( "Pass The Bomb running, here there be dragons" )
 
+	--Teams:Init()
 	PTB:Init()
 
 	Convars:RegisterCommand( "ptb_next", function(...)
-			PTB:End()
-			PTB:Begin()
-		end, "Next round", 0 )
+		PTB:BeginRound()
+	end, "Next round", 0 )
+
+	Convars:RegisterCommand( "ptb_test", function(...)
+		PTB.Type = PTB.TYPE_TEST
+	end, "Test, go", 0 )
+
+	Convars:RegisterCommand( "ptb_fast", function(...)
+		PTB.RoundTime = 5
+		PTB.NewRoundTime = 5
+		PTB.NewMatchTime = 10
+
+		Say( nil, "Sanic mode: ACTIVE! (May god have mercy on your souls)", false )
+	end, "Gotta go fast", 0 )
 end

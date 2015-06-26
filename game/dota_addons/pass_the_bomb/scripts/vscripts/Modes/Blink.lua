@@ -8,7 +8,7 @@ function Mode:Init()
 		local hero = p.Entity:GetAssignedHero()
 
 		if IsValidEntity( hero ) then
-			hero:GetAbilityByName( "techies_blink" ):SetLevel( 2 )
+			hero:FindAbilityByName( "techies_blink" ):SetLevel( 2 )
 		end
 	end
 end
@@ -20,9 +20,13 @@ function Mode:Cleanup()
 		local hero = p.Entity:GetAssignedHero()
 
 		if IsValidEntity( hero ) then
-			hero:GetAbilityByName( "techies_blink" ):SetLevel( 1 )
+			hero:FindAbilityByName( "techies_blink" ):SetLevel( 1 )
 		end
 	end
+end
+
+function Mode:OnTick()
+	GameRules:SetTimeOfDay( 0.5 )
 end
 
 return Mode

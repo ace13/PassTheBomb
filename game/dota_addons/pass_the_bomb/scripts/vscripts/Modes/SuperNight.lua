@@ -14,25 +14,15 @@ function Mode:Init()
 		end
 	end
 
-	local carrier = PTB.Bomb:GetCarrier()
-
-	if IsValidEntity( carrier ) then
-		carrier:SetNightTimeVisionRange( carrier.BaseNightTimeVision * 0.25 )
-
-		if not carrier.BaseMoveSpeed then carrier.BaseMoveSpeed = carrier:GetBaseMoveSpeed() end
-		carrier:SetBaseMoveSpeed( 2048 )
-	end
-
 	PTB.Bomb:AddOnPass( "SuperNight", function( from, to, bomb )
-		print( "Bomb passed from " .. (from and from.Player.Name or "nobody") .. " to " .. to.Player.Name )
-
 		if IsValidEntity( from ) then
 			from:SetNightTimeVisionRange( from.BaseNightTimeVision )
+			if not from.BaseMoveSpeed then from.BaseMoveSpeed = from:GetBaseMoveSpeed() end
 			from:SetBaseMoveSpeed( from.BaseMoveSpeed )
 		end
 
 		if IsValidEntity( to ) then
-			to:SetNightTimeVisionRange( to.BaseNightTimeVision * 0.25 )
+			to:SetNightTimeVisionRange( to.BaseNightTimeVision * 0.3 )
 			if not to.BaseMoveSpeed then to.BaseMoveSpeed = to:GetBaseMoveSpeed() end
 			to:SetBaseMoveSpeed( 2048 )
 		end

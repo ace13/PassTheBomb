@@ -23,32 +23,29 @@ function Bomb:RemoveOnPass( id )
 	self.OnPasses[ id ] = nil
 end
 
-function Bomb:Reset()
-	--self.Carrier = nil
-	--self.LastCarrier = nil
+function Bomb:Reset( full )
+	if full then
+		self.Carrier = nil
+		self.LastCarrier = nil
+	end
 
+	self:Take( true )
 	self.Item = CreateItem( "item_bomb", nil, nil )
 end
 
 function Bomb:StartCountdown()
 	if PTB.State ~= PTB.STATE_ROUND then return end
 
-	self.ExplodePoint = GameRules:GetGameTime() + 30
+	self.ExplodePoint = GameRules:GetGameTime() + PTB.RoundTime
 	self.Countdown = true
 end
 
 function Bomb:Explode()
-	-- TODO: All of this
-	print( "TODO: Your head asplode!" )
+	local reason = IsValidEntity( self.LastCarrier ) and self.LastCarrier or self.Carrier
+	PTB:ExplodePlayer( self.Carrier, reason:FindAbilityByName( "techies_pass_the_bomb" ), reason  )
 
-	--[[
-	CreateEffect( {
-		entity = self:Carrier(),
-		effect = ""
-	} )
-	]]
-
-	PTB:End()
+	self:Take()
+	PTB:EndRound()
 end
 
 function Bomb:OnTick()
@@ -64,25 +61,35 @@ function Bomb:OnTick()
 	if self.Countdown then
 		local timeLeft = self.ExplodePoint - GameRules:GetGameTime()
 
-		Say(nil, "Time left: " .. timeLeft, false)
 		if timeLeft <= 0 then
 			self:Explode()
 			self.Countdown = nil
+		else
+			Say(nil, "Time left: " .. math.ceil( timeLeft ), false)
 		end
 	end
 end
 
-function Bomb:Take()
+function Bomb:Take( skip )
 	if IsValidEntity( self.Carrier ) then
 		self.Carrier:FindAbilityByName( "techies_pass_the_bomb" ):SetLevel(0)
 		self.Carrier:RemoveItem( self.Item )
 	end
 
-	self:Reset()
-end
+	if IsValidEntity( self.Item ) then
+		if IsValidEntity( self.Item:GetContainer() ) then
+			print( "Killing container" )
+			self.Item:GetContainer():Kill()
+		end
 
-local function hasItem( hero, item )
+		if IsValidEntity( self.Item:GetOwner() ) then
+			print( "Taking from owner" )
+			self.Item:GetOwner():FindAbilityByName( "techies_pass_the_bomb" ):SetLevel(0)
+			self.Item:GetOwner():RemoveItem( self.Item )
+		end
+	end
 
+	if not skip then self:Reset() end
 end
 
 function Bomb:Pass( hero, from )
@@ -90,6 +97,7 @@ function Bomb:Pass( hero, from )
 		if IsValidEntity( self.Carrier ) then
 			self.Carrier:FindAbilityByName( "techies_pass_the_bomb" ):SetLevel(0)
 			self.Carrier:RemoveItem( self.Item )
+
 			self:Reset()
 
 			self.LastCarrier = self.Carrier
@@ -97,7 +105,7 @@ function Bomb:Pass( hero, from )
 
 		hero:AddItem( self.Item )
 
-		if not IsValidEntity( self.Carrier ) then
+		if not self.Countdown then
 			self:StartCountdown()
 		end
 		self.Carrier = hero

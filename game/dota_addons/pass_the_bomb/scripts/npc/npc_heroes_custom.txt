@@ -6,9 +6,13 @@
 		"AbilityLayout" "4"
 		"Ability1"      "techies_blink"
 		"Ability2"      "techies_pass_the_bomb"
-		"Ability3"      "techies_invis"
-		"Ability4"      "techies_invis"
-		"Ability5"      "techies_invis"
-		"Ability6"      "techies_invis"
+		"Ability3"      "techies_explode"
+		"Ability4"      "techies_invis2"
+		"Ability5"      "techies_invis3"
+		"Ability6"      "techies_invis4"
+
+		"AttackCapabilities" "DOTA_UNIT_CAP_NO_ATTACK"
+
+		"BountyXP"      "0"
 	}
 }

@@ -26,4 +26,8 @@ function Mode:Cleanup()
 	end
 end
 
+function Mode:OnTick()
+	GameRules:SetTimeOfDay( 0.5 )
+end
+
 return Mode

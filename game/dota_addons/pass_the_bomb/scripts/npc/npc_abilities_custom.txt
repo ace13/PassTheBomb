@@ -16,7 +16,7 @@
 			"particle"      "particles/units/heroes/hero_antimage/antimage_blink_start.vpcf"
 		}
 
-		"AbilityCastPoint" "0.0"
+		"AbilityCastPoint" "0.3"
 		"AbilityCooldown"  "12.0 4.0"
 		"MaxLevel"         "2"
 		"RequiredLevel"    "0"
@@ -72,7 +72,7 @@
 		"BaseClass"             "ability_datadriven"
 		"AbilityBehavior"       "DOTA_ABILITY_BEHAVIOR_UNIT_TARGET"
 		"AbilityTextureName"    "techies_remote_mines"
-		"AbilityUnitTargetTeam" "DOTA_UNIT_TARGET_TEAM_BOTH"
+		"AbilityUnitTargetTeam" "DOTA_UNIT_TARGET_TEAM_ENEMY"
 		"AbilityUnitTargetType" "DOTA_UNIT_TARGET_HERO"
 
 		"AbilityType"           "DOTA_ABILITY_TYPE_BASIC"
@@ -96,7 +96,7 @@
 			"01"
 			{
 				"var_type"      "FIELD_FLOAT"
-				"throw_speed"   "650 1024"
+				"throw_speed"   "1000 2024"
 			}
 
 			"02"
@@ -158,12 +158,52 @@
 			{
 				"ScriptFile"    "scripts/vscripts/Abilities/PassTheBomb.lua"
 				"Function"      "Refresh"
-				"Target"        "CASTER"
+				"Target"        "TARGET"
 			}
 		}
 	}
 
-	"techies_invis"
+	"techies_explode"
+	{
+		"BaseClass"             "ability_datadriven"
+		"AbilityBehavior"       "DOTA_ABILITY_BEHAVIOR_HIDDEN"
+		"AbilityType"           "DOTA_ABILITY_TYPE_BASIC"
+
+		"precache"
+		{
+			"soundfile"		"soundevents/game_sounds_heroes/game_sounds_techies.vsndevts"		
+			"particle"		"particles/units/heroes/hero_techies/techies_suicide_base.vpcf"
+		}
+
+		"OnSpellStart"
+		{
+			"FireSound"
+			{
+				"EffectName"	"Hero_Techies.Suicide"
+				"Target" 		"CASTER"
+			}
+
+			"FireEffect"
+			{
+				"EffectName"        "particles/units/heroes/hero_techies/techies_suicide_base.vpcf"
+				"EffectAttachType"  "follow_origin"
+				"Target"            "CASTER"
+			}
+		}
+	}
+	"techies_invis2"
+	{
+		"BaseClass"             "ability_datadriven"
+		"AbilityBehavior"       "DOTA_ABILITY_BEHAVIOR_HIDDEN"
+		"AbilityType"           "DOTA_ABILITY_TYPE_BASIC"
+	}
+	"techies_invis3"
+	{
+		"BaseClass"             "ability_datadriven"
+		"AbilityBehavior"       "DOTA_ABILITY_BEHAVIOR_HIDDEN"
+		"AbilityType"           "DOTA_ABILITY_TYPE_BASIC"
+	}
+	"techies_invis4"
 	{
 		"BaseClass"             "ability_datadriven"
 		"AbilityBehavior"       "DOTA_ABILITY_BEHAVIOR_HIDDEN"

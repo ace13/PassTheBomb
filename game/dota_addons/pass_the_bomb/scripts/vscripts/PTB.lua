@@ -4,15 +4,24 @@ if not PTB then
 	PTB.GamemodeClass = PTBGamemode
 end
 
+PTB.TYPE_FFA = 1
+PTB.TYPE_TEST = 2
+PTB.TYPE_TEAM = 3
+
 PTB.STATE_PREROUND  = 1
 PTB.STATE_ROUND     = 2
 PTB.STATE_POSTROUND = 3
+
+PTB.RoundTime = 15
+PTB.NewRoundTime = 10
+PTB.NewMatchTime = 30
 
 function PTB:Init()
 	print( "Loading modules:" )
 	LoadModule( "Bomb" )
 	LoadModule( "Player" )
-
+	LoadModule( "Teams" )
+	LoadModule( "Timers" )
 
 	PTB.Game = self
 	PTB.LastTick = GameRules:GetGameTime()
@@ -23,8 +32,14 @@ function PTB:Init()
 	}
 	PTB.Players = { }
 	PTB.State = PTB.STATE_PREROUND
+	PTB.Type = PTB.TYPE_FFA
+
+	local time_txt = string.gsub(string.gsub(GetSystemTime(), ':', ''), '0','')
+	math.randomseed(tonumber(time_txt))
 
 	ListenToGameEvent( 'dota_item_picked_up', Dynamic_Wrap( self, 'EventItemPickup' ),         self )
+	ListenToGameEvent( 'dota_player_gained_level', Dynamic_Wrap( self, 'EventGainLevel' ),     self )
+	ListenToGameEvent( 'game_rules_state_change', Dynamic_Wrap( self, 'EventStateChanged' ),   self )
 	ListenToGameEvent( 'player_connect_full', Dynamic_Wrap( self, 'EventPlayerConnected' ),    self )
 	ListenToGameEvent( 'player_team',         Dynamic_Wrap( self, 'EventPlayerJoinedTeam' ),   self )
 	ListenToGameEvent( 'player_disconnect',   Dynamic_Wrap( self, 'EventPlayerDisconnected' ), self )
@@ -35,11 +50,14 @@ function PTB:Init()
 	GameRules:SetCustomGameTeamMaxPlayers( DOTA_TEAM_GOODGUYS, 10 )
 	GameRules:SetCustomGameTeamMaxPlayers( DOTA_TEAM_BADGUYS, 0 )
 	GameRules:SetCustomVictoryMessage( "Boom! Hahahaha" )
+	GameRules:SetHideKillMessageHeaders( true )
 
 	GameRules:SetGoldPerTick( 0 )
 	GameRules:SetHeroRespawnEnabled( false )
 	GameRules:SetPreGameTime( 30 )
 	GameRules:SetSameHeroSelectionEnabled( true )
+
+	--GameRules:SetFirstBloodActive( true )
 
 	-- Gamemode settings
 	local gamemode = GameRules:GetGameModeEntity()
@@ -61,11 +79,6 @@ function PTB:Init()
 	print( "Creating Da Bomb" )
 
 	PTB.Bomb = Bomb()
-
-	Timers:CreateTimer(20, function()
-		Say( nil, "First round in 30s", false )
-		PTB:BeginRound()
-	end )
 end
 
 
@@ -88,25 +101,28 @@ function PTB:PickMode()
 	end
 end
 
-function PTB:BeginRound()
+function PTB:BeginRound( skip_time )
 	PTB.State = PTB.STATE_PREROUND
 	PTB.CurMode = PTB:PickMode()
 
-	PTB.Bomb:Reset()
-	CreateItemOnPositionSync( Entities:FindByName( nil, "bomb_spawn" ):GetAbsOrigin(), PTB.Bomb.Item )
+	if not skip_time then
+		PTB.Bomb:Reset( true )
+		CreateItemOnPositionSync( Entities:FindByName( nil, "bomb_spawn" ):GetAbsOrigin(), PTB.Bomb.Item )
 
-	Say( nil, PTB.CurMode.Name .. " mode in 10s", false )
+		Say( nil, PTB.CurMode.Name .. " mode in " .. PTB.NewRoundTime .. " seconds", false )
+	end
 
-	Timers:CreateTimer( 10, function() 
-		PTB.Bomb:Take()
+	Timers:CreateTimer( skip_time and 0 or PTB.NewRoundTime, function() 
+		PTB.Bomb:Reset( true )
 		PTB.State = PTB.STATE_ROUND
-
-		local luckyGuy = PTB.Players[ math.random( #PTB.Players) ]
-		PTB.Bomb:Give( luckyGuy )
-		Say( nil, luckyGuy.Name .. " is the lucky guy.", false)
 
 		PTB.CurMode.StartTime = GameRules:GetGameTime()
 		PTB.CurMode:Init()
+
+		local luckyGuy = PTB:FindRandomAlivePlayer()
+		PTB.Bomb:Pass( luckyGuy.Hero )
+
+		Say( nil, luckyGuy.Name .. " is the lucky guy.", false)
 	end )
 end
 
@@ -121,10 +137,32 @@ function PTB:EndRound()
 
 	PTB.LastMode = mode
 
-	Timers:CreateTimer( 10, function()
-		Say( nil, "10s until next round", false )
-		PTB:BeginRound()
-	end )
+	local alive = PTB:AlivePlayers()
+	if #alive == 1 then
+		Say( nil, alive[ 1 ].Name .. " wins this one, next match in " .. PTB.NewMatchTime .. " seconds", false )
+
+		alive[ 1 ].Points = alive[ 1 ].Points + 1
+
+		Timers:CreateTimer( ( PTB.NewMatchTime - PTB.NewRoundTime ), function() 
+			GameRules:SetHeroRespawnEnabled( true )
+
+			for _,p in pairs( PTB:DeadPlayers() ) do
+				if p.State == Player.STATE_CONNECTED then
+					--p.Hero:RespawnHero( false, false, false )
+					p.Hero:RespawnUnit()
+				end
+			end
+
+			GameRules:SetHeroRespawnEnabled( false )
+
+			GameRules:SetFirstBloodActive( false )
+			PTB:BeginRound()
+		end )
+	else
+		Timers:CreateTimer( 1, function()
+			PTB:BeginRound()
+		end )
+	end
 end
 
 function PTB:OnTick()
@@ -150,6 +188,30 @@ end
 -- Player handling
 -------------------------------------]]
 
+function PTB:AlivePlayers()
+	local ret = { }
+
+	for _,p in pairs( PTB.Players ) do
+		if IsValidEntity( p.Hero ) and p.Hero:IsAlive() then
+			ret[ #ret + 1 ] = p
+		end
+	end
+
+	return ret
+end
+
+function PTB:DeadPlayers()
+	local ret = { }
+
+	for _,p in pairs( PTB.Players ) do
+		if IsValidEntity( p.Hero ) and not p.Hero:IsAlive() then
+			ret[ #ret + 1 ] = p
+		end
+	end
+
+	return ret
+end
+
 function PTB:FindPlayer( search )
 	if not search or type( search ) ~= "table" then return nil end
 	if not search.State then search.State = Player.STATE_CONNECTED end
@@ -169,6 +231,14 @@ function PTB:FindPlayer( search )
 	return Player()
 end
 
+function PTB:FindRandomAlivePlayer()
+	local ret = PTB:AlivePlayers()
+
+	if #ret == 0 then return nil end
+
+	return ret[ math.random(#ret) ]
+end
+
 function PTB:RegisterPlayer( player )
 	if not PTB.Players then PTB.Players = {} end
 
@@ -179,11 +249,11 @@ function PTB:ReturningPlayer( player )
 	player.State = Player.STATE_CONNECTED
 end
 
-function PTB:PlayerDisconnect( player )
+function PTB:PlayerDisconnected( player )
 	player.State = Player.STATE_DISCONNECTED
 end
 
-function PTB:ExplodePlayer( player )
+function PTB:ExplodePlayer( player, ability, caster )
 	local target = nil
 	if player.Hero then
 		target = player.Hero
@@ -194,12 +264,28 @@ function PTB:ExplodePlayer( player )
 	if not IsValidEntity( target ) then return end
 
 	print( target.Player.Name .. " goes asplodey" )
+	
+	local ability = target:FindAbilityByName( "techies_explode" )
+	ability:SetLevel( 1 )
+	ability:CastAbility()
+	ability:SetLevel( 0 )
+
+	target:Kill( ability, caster )
 end
 
 
 --[[-----------------------------------
 -- Event handling
 -------------------------------------]]
+
+function PTB:EventGainLevel( event )
+	print( "PTB:EventGainLevel" )
+	-- DeepPrintTable( event )
+
+	local p = PTB:FindPlayer( { UserID = event.player } )
+
+	p.Hero:SetAbilityPoints( 0 )
+end
 
 function PTB:EventItemPickup( event )
 	print( "PTB:EventItemPickup" )
@@ -254,4 +340,30 @@ function PTB:EventPlayerJoinedTeam( event )
 	local p = PTB:FindPlayer( { UserID = event.userid } )
 
 	p:OnJoinTeam( event )
+end
+
+function PTB:EventStateChanged( event )
+	print( "PTB:EventStateChanged" )
+	local state = GameRules:State_Get()
+	print( "State: " .. state )
+
+	if state == DOTA_GAMERULES_STATE_PRE_GAME then
+		Timers:CreateTimer( 3, function()
+			CustomGameEventManager:Send_ServerToAllClients( "teams_changed", { } )
+			Teams:Init()
+
+			if PTB.Type == PTB.TYPE_FFA then
+				local i = 1
+				for _,p in pairs( PTB.Players ) do
+					print( "FFA: ", i, Teams.TeamIDs[ i ] )
+					p:SetTeam( Teams.TeamIDs[ i ] )
+					i = i + 1
+				end
+			end
+		end )
+
+		Say( nil, "First round starts in 30 seconds, get ready.", false )
+	elseif state == DOTA_GAMERULES_STATE_GAME_IN_PROGRESS then
+		PTB:BeginRound( true )
+	end
 end

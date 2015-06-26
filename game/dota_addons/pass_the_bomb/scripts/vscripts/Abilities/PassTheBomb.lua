@@ -11,7 +11,9 @@ function PassTheBomb( keys )
 end
 
 function Refresh( keys )
+	DeepPrintTable( keys )
 	local ability = keys.ability
 
 	ability:EndCooldown()
+	ability:StartCooldown( 4 )
 end
