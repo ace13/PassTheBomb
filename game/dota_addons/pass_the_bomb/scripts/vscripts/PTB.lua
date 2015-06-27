@@ -14,6 +14,9 @@ PTB.RoundTime = 15
 PTB.NewRoundTime = 10
 PTB.NewMatchTime = 30
 
+PTB.ADDING_AI = false
+PTB.TESTING = false
+
 function PTB:Init()
 	print( "Loading modules:" )
 	LoadModule( "Bomb" )
@@ -40,7 +43,8 @@ function PTB:Init()
 	ListenToGameEvent( 'dota_item_picked_up', Dynamic_Wrap( PTB, 'EventItemPickup' ),         PTB )
 	ListenToGameEvent( 'dota_player_gained_level', Dynamic_Wrap( PTB, 'EventGainLevel' ),     PTB )
 	ListenToGameEvent( 'game_rules_state_change', Dynamic_Wrap( PTB, 'EventStateChanged' ),   PTB )
-	ListenToGameEvent( 'player_connect_full', Dynamic_Wrap( PTB, 'EventPlayerConnected' ),    PTB )
+	ListenToGameEvent( 'player_connect',      Dynamic_Wrap( PTB, 'EventPlayerConnected' ),    PTB )
+	ListenToGameEvent( 'player_connect_full', Dynamic_Wrap( PTB, 'EventPlayerJoined' ),       PTB )
 	ListenToGameEvent( 'player_team',         Dynamic_Wrap( PTB, 'EventPlayerJoinedTeam' ),   PTB )
 	ListenToGameEvent( 'player_disconnect',   Dynamic_Wrap( PTB, 'EventPlayerDisconnected' ), PTB )
 	ListenToGameEvent( 'player_reconnected',  Dynamic_Wrap( PTB, 'EventPlayerReconnected' ),  PTB )
@@ -48,7 +52,7 @@ function PTB:Init()
 
 	-- Game rules
 	-- [[
-	if Convars:GetInt( "sv_cheats" ) == 1 then
+	if PTB.TESTING then
 		GameRules:SetCustomGameTeamMaxPlayers( DOTA_TEAM_GOODGUYS, 10 ) -- For dota_create_fake_clients
 		GameRules:SetCustomGameTeamMaxPlayers( DOTA_TEAM_BADGUYS, 0 )
 	else
@@ -56,6 +60,7 @@ function PTB:Init()
 	end
 	--GameRules:SetCustomGameTeamMaxPlayers( DOTA_TEAM_BADGUYS, 0 )
 	--]]
+	--Teams:Init()
 	GameRules:SetCustomVictoryMessage( "Boom! Hahahaha" )
 	--GameRules:SetHideKillMessageHeaders( true )
 
@@ -206,7 +211,7 @@ function PTB:EventGainLevel( event )
 	PrintTable( event )
 
 	local player = PlayerRegistry:GetPlayer( {
-		PlayerID = event.userid
+		UserID = event.player
 	} )
 
 	if player then player:OnGainedLevel( event ) end
@@ -253,6 +258,43 @@ function PTB:EventPlayerConnected( event )
 	if player then player:OnConnected( event ) end
 end
 
+local playerCount = 0
+function PTB:EventPlayerJoined( event )
+	print( "PTB:EventPlayerJoined" )
+	PrintTable( event )
+
+	playerCount	= playerCount + 1
+
+	local ply = EntIndexToHScript( event.index + 1 )
+	local id = playerCount
+
+	print( "Player #" .. id .. " connected." )
+
+	if PTB.TESTING then
+		ply:SetTeam( DOTA_TEAM_GOODGUYS )
+	else
+		ply:SetTeam( Teams.TeamIDs[ id ] )
+	end
+
+	PrecacheUnitByNameAsync( 'npc_dota_hero_techies', function() print( 'Techies precached!' ) end )
+
+	if PTB.TESTING and not PTB.ADDING_AI then
+		PTB.ADDING_AI = true
+		SendToServerConsole('dota_create_fake_clients')
+		Timers:CreateTimer( 1, function() 
+			for i = 0, PlayerResource:GetPlayerCount() - 1 do
+				if PlayerResource:IsFakeClient( i ) then
+					local ply = PlayerResource:GetPlayer( i )
+					PTB:EventPlayerJoined( { 
+						userid = i + 1,
+						index  = ply:entindex() - 1
+					} )
+				end
+			end
+		end )
+	end
+end
+
 function PTB:EventPlayerDisconnected( event )
 	print( "PTB:EventPlayerDisconnected" )
 	PrintTable( event )
@@ -279,6 +321,38 @@ function PTB:EventPlayerJoinedTeam( event )
 	end
 end
 
+local firstFake = nil
+function PTB:EventPlayersAllJoined()
+	print( "PTB:EventPlayersAllJoined" )
+
+	PTB.ADDING_AI = false
+	if PTB.TESTING then
+		if PTB.Type == PTB.TYPE_FFA then
+			Teams:Init()
+			CustomGameEventManager:Send_ServerToAllClients( "teams_changed", { } )
+
+			for _, p in pairs( PlayerRegistry:GetAllPlayers() ) do
+				PrintTable( p )
+				p:SetTeam( Teams.TeamIDs[ p.ID ] )
+			end
+		end
+	end
+
+	for i = 0, PlayerResource:GetPlayerCount() do
+		local ply = PlayerResource:GetPlayer( i )
+
+		if IsValidEntity( ply ) then
+			local hero = nil
+			--if PlayerResource:HasSelectedHero( i ) and PlayerResource:GetSelectedHeroEntity( i ) then
+				-- hero = PlayerResource:ReplaceHeroWith( i, 'npc_dota_hero_techies', 0, 0 )
+			--else
+			if not PlayerResource:IsFakeClient( i ) and not PlayerResource:GetSelectedHeroEntity( i ) then
+				hero = CreateHeroForPlayer( 'npc_dota_hero_techies', ply )
+			end
+		end
+	end
+end
+
 function PTB:EventStateChanged( event )
 	print( "PTB:EventStateChanged" )
 	--PrintTable( event )
@@ -290,6 +364,13 @@ function PTB:EventStateChanged( event )
 		print( "  State: INIT" )
 	elseif state == DOTA_GAMERULES_STATE_HERO_SELECTION then
 		print( "  State: HERO_SELECTION" )
+		Timers:CreateTimer( 2, function()
+				if PlayerResource:HaveAllPlayersJoined() then
+					PTB:EventPlayersAllJoined()
+					return
+				end
+				return 1
+		end )
 		--[[
 		local i = 0
 		Timers:CreateTimer( 2, function()
@@ -310,7 +391,7 @@ function PTB:EventStateChanged( event )
 		--]]
 	elseif state == DOTA_GAMERULES_STATE_PRE_GAME then
 		print( "  State: PRE_GAME" )
-		-- [[
+		--[[
 		if Convars:GetInt( "sv_cheats" ) == 1 then
 			Timers:CreateTimer(4, function()
 				if PTB.Type == PTB.TYPE_FFA then

@@ -40,6 +40,9 @@ function Player:_InitHero( entity )
 
 	self.HeroEntity = entity
 	self.HeroEntity.Player = self
+
+	self.HeroEntity:SetControllableByPlayer( self.UserID, true )
+	self.HeroEntity:SetPlayerID( self.UserID )
 	
 	self.HeroEntity:SetAngles( 0, math.random(360), 0 )
 	self.HeroEntity:SetAbilityPoints( 0 )
@@ -282,7 +285,9 @@ end
 function Player:OnGainedLevel( event )
 	print( self.Name .. " gains a level!" )
 
-	if IsValidEntity( self.HeroEntity ) then self.HeroEntity:SetAbilityPoints( 0 ) end
+	if IsValidEntity( self.HeroEntity ) then
+		self.HeroEntity:SetAbilityPoints( 0 )
+	end
 end
 
 function Player:OnItemPickedup( event )

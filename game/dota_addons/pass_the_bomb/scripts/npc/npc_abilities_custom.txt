@@ -194,19 +194,19 @@
 	"techies_invis2"
 	{
 		"BaseClass"             "ability_datadriven"
-		"AbilityBehavior"       "DOTA_ABILITY_BEHAVIOR_HIDDEN"
-		"AbilityType"           "DOTA_ABILITY_TYPE_BASIC"
+		"AbilityBehavior"       "DOTA_ABILITY_BEHAVIOR_PASSIVE | DOTA_ABILITY_BEHAVIOR_NOT_LEARNABLE"
+		"MaxLevel"              "0"
 	}
 	"techies_invis3"
 	{
 		"BaseClass"             "ability_datadriven"
-		"AbilityBehavior"       "DOTA_ABILITY_BEHAVIOR_HIDDEN"
-		"AbilityType"           "DOTA_ABILITY_TYPE_BASIC"
+		"AbilityBehavior"       "DOTA_ABILITY_BEHAVIOR_PASSIVE | DOTA_ABILITY_BEHAVIOR_NOT_LEARNABLE"
+		"MaxLevel"              "0"
 	}
 	"techies_invis4"
 	{
 		"BaseClass"             "ability_datadriven"
-		"AbilityBehavior"       "DOTA_ABILITY_BEHAVIOR_HIDDEN"
-		"AbilityType"           "DOTA_ABILITY_TYPE_BASIC"
+		"AbilityBehavior"       "DOTA_ABILITY_BEHAVIOR_PASSIVE | DOTA_ABILITY_BEHAVIOR_NOT_LEARNABLE"
+		"MaxLevel"              "0"
 	}
 }
