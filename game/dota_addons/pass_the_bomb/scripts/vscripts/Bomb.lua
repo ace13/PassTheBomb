@@ -108,9 +108,8 @@ function Bomb:Pass( player, from )
 		end
 
 		FireGameEvent( "ptb_bomb_passed", {
-			old_carrier = self.LastCarrier,
-			new_carrier = self.Carrier,
-			bomb = self
+			old_carrier = self.LastCarrier and self.LastCarrier.UserID or -1,
+			new_carrier = self.Carrier.UserID
 		} )
 
 		print( self.Carrier.Name .. " got a bomb." )

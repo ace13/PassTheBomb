@@ -48,16 +48,17 @@ function PTB:Init()
 	ListenToGameEvent( 'player_team',         Dynamic_Wrap( PTB, 'EventPlayerJoinedTeam' ),   PTB )
 	ListenToGameEvent( 'player_disconnect',   Dynamic_Wrap( PTB, 'EventPlayerDisconnected' ), PTB )
 	ListenToGameEvent( 'player_reconnected',  Dynamic_Wrap( PTB, 'EventPlayerReconnected' ),  PTB )
+	ListenToGameEvent( 'ptb_bomb_passed',     Dynamic_Wrap( PTB, 'EventBombPassed' ),         PTB )
 	ListenToGameEvent( 'npc_spawned',         Dynamic_Wrap( PTB, 'EventNPCSpawned' ),         PTB )
 
 	-- Game rules
 	-- [[
-	if PTB.TESTING then
+	--if PTB.TESTING then
 		GameRules:SetCustomGameTeamMaxPlayers( DOTA_TEAM_GOODGUYS, 10 ) -- For dota_create_fake_clients
 		GameRules:SetCustomGameTeamMaxPlayers( DOTA_TEAM_BADGUYS, 0 )
-	else
-		Teams:Init()
-	end
+	--else
+	--	Teams:Init()
+	--end
 	--GameRules:SetCustomGameTeamMaxPlayers( DOTA_TEAM_BADGUYS, 0 )
 	--]]
 	--Teams:Init()
@@ -166,10 +167,10 @@ function PTB:EndRound()
 		Timers:CreateTimer( ( PTB.NewMatchTime - PTB.NewRoundTime ), function() 
 			--GameRules:SetHeroRespawnEnabled( true )
 
-			for _,p in pairs( PlayerRegistry:GetDeadPlayers() ) do
+			for _,p in pairs( PlayerRegistry:GetDeadPlayers( { Connected = true } ) ) do
 				if p.State == Player.STATE_CONNECTED then
-					--p.Hero:RespawnHero( false, false, false ) -- Why does this crash the map?
-					p.HeroEntity:RespawnUnit()
+					p.HeroEntity:RespawnHero( false, false, false )
+					--p.HeroEntity:RespawnUnit()
 				end
 			end
 
@@ -206,12 +207,17 @@ end
 -- Event handling
 -------------------------------------]]
 
+function PTB:EventBombPassed( event )
+	print( "PTB:EventBombPassed" )
+	PrintTable( event )
+end
+
 function PTB:EventGainLevel( event )
 	print( "PTB:EventGainLevel" )
 	PrintTable( event )
 
 	local player = PlayerRegistry:GetPlayer( {
-		UserID = event.player
+		UserID = event.player - 1
 	} )
 
 	if player then player:OnGainedLevel( event ) end
@@ -237,11 +243,12 @@ function PTB:EventNPCSpawned( event )
 	if not IsValidEntity( npc) or not npc:IsHero() then return end
 
 	local player = PlayerRegistry:GetPlayer( {
-		Hero = npc
+		UserID = npc:GetPlayerOwnerID()
 	} )
 
 	if not player then
-		player = PlayerRegistry:RegisterPlayer( Player.Create( npc:GetPlayerID() ) )
+		print( "Creating player for ID " .. npc:GetPlayerOwnerID() )
+		player = PlayerRegistry:RegisterPlayer( Player.Create( npc:GetPlayerOwnerID() ) )
 	end
 
 	player:OnSpawned( event )
@@ -252,7 +259,7 @@ function PTB:EventPlayerConnected( event )
 	PrintTable( event )
 
 	local player = PlayerRegistry:GetPlayer( {
-		PlayerID = event.userid
+		UserID = event.userid - 1
 	} )
 
 	if player then player:OnConnected( event ) end
@@ -270,11 +277,11 @@ function PTB:EventPlayerJoined( event )
 
 	print( "Player #" .. id .. " connected." )
 
-	if PTB.TESTING then
-		ply:SetTeam( DOTA_TEAM_GOODGUYS )
-	else
+	--if PTB.TESTING then
+	--	ply:SetTeam( DOTA_TEAM_GOODGUYS )
+	--else
 		ply:SetTeam( Teams.TeamIDs[ id ] )
-	end
+	--end
 
 	PrecacheUnitByNameAsync( 'npc_dota_hero_techies', function() print( 'Techies precached!' ) end )
 
@@ -300,7 +307,7 @@ function PTB:EventPlayerDisconnected( event )
 	PrintTable( event )
 
 	local player = PlayerRegistry:GetPlayer( {
-		PlayerID = event.userid
+		UserID = event.userid - 1
 	} )
 
 	if player then player:OnDisconnected( event ) end
@@ -311,12 +318,14 @@ function PTB:EventPlayerJoinedTeam( event )
 	PrintTable( event )
 
 	local player = PlayerRegistry:GetPlayer( {
-		PlayerID = event.userid
+		UserID = event.userid - 1
 	} )
 
 	if player then
+		print( "OnJoinedTeam" )
 		player:OnJoinedTeam( event )
 	else
+		print( "Priming name \"" .. event.name .. "\" for " .. (event.userid - 1) )
 		PlayerRegistry:PrimeName( event.userid - 1, event.name )
 	end
 end
@@ -326,31 +335,6 @@ function PTB:EventPlayersAllJoined()
 	print( "PTB:EventPlayersAllJoined" )
 
 	PTB.ADDING_AI = false
-	if PTB.TESTING then
-		if PTB.Type == PTB.TYPE_FFA then
-			Teams:Init()
-			CustomGameEventManager:Send_ServerToAllClients( "teams_changed", { } )
-
-			for _, p in pairs( PlayerRegistry:GetAllPlayers() ) do
-				PrintTable( p )
-				p:SetTeam( Teams.TeamIDs[ p.ID ] )
-			end
-		end
-	end
-
-	for i = 0, PlayerResource:GetPlayerCount() do
-		local ply = PlayerResource:GetPlayer( i )
-
-		if IsValidEntity( ply ) then
-			local hero = nil
-			--if PlayerResource:HasSelectedHero( i ) and PlayerResource:GetSelectedHeroEntity( i ) then
-				-- hero = PlayerResource:ReplaceHeroWith( i, 'npc_dota_hero_techies', 0, 0 )
-			--else
-			if not PlayerResource:IsFakeClient( i ) and not PlayerResource:GetSelectedHeroEntity( i ) then
-				hero = CreateHeroForPlayer( 'npc_dota_hero_techies', ply )
-			end
-		end
-	end
 end
 
 function PTB:EventStateChanged( event )
@@ -364,7 +348,7 @@ function PTB:EventStateChanged( event )
 		print( "  State: INIT" )
 	elseif state == DOTA_GAMERULES_STATE_HERO_SELECTION then
 		print( "  State: HERO_SELECTION" )
-		Timers:CreateTimer( 2, function()
+		Timers:CreateTimer( 4, function()
 				if PlayerResource:HaveAllPlayersJoined() then
 					PTB:EventPlayersAllJoined()
 					return
@@ -391,6 +375,31 @@ function PTB:EventStateChanged( event )
 		--]]
 	elseif state == DOTA_GAMERULES_STATE_PRE_GAME then
 		print( "  State: PRE_GAME" )
+
+		Timers:CreateTimer( function()
+			print( "Tick" )
+			for i = 0, PlayerResource:GetPlayerCount() - 1 do
+				local ply = PlayerResource:GetPlayer( i )
+				if IsValidEntity( ply ) and
+				   not IsValidEntity( ply:GetAssignedHero() ) then
+					print( i .. " is not valid " )
+					return 0.5
+				end
+			end
+
+			Teams:Init()
+			CustomGameEventManager:Send_ServerToAllClients( "ptb_teams_changed", { } )
+
+			for i = 0, PlayerResource:GetPlayerCount() - 1 do
+				local ply = PlayerResource:GetPlayer( i )
+
+				if IsValidEntity( ply ) then
+					local hero = ply:GetAssignedHero()
+					ply:SetTeam( Teams.TeamIDs[ i + 1 ] )
+					hero:RespawnHero( false, true, false )	
+				end
+			end
+		end )
 		--[[
 		if Convars:GetInt( "sv_cheats" ) == 1 then
 			Timers:CreateTimer(4, function()

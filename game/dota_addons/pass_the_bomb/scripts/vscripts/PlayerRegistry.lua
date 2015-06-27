@@ -9,6 +9,9 @@ end
 
 function PlayerRegistry:PrimeName( playerID, name )
 	if not self.Names then self.Names = { } end
+	if not name or string.len( name ) == 0 then return end
+	if self.Names[ playerID ] then return end
+
 	self.Names[ playerID ] = name
 end
 

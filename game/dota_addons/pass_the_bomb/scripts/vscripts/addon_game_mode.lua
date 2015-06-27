@@ -29,6 +29,15 @@ function Activate()
 	end, "Test, go", 0 )
 
 	Convars:RegisterCommand( "ptb_fast", function(...)
+		PTB.RoundTime = 5
+		PTB.NewRoundTime = 5
+		PTB.NewMatchTime = 10
+		GameRules:SetPreGameTime( 10 )
+
+		Say( nil, "Fast rounds enabled, prepare to APM", false )
+	end, "Faster rounds", 0 )
+
+	Convars:RegisterCommand( "ptb_sanic", function(...)
 		PTB.RoundTime = 1
 		PTB.NewRoundTime = 1
 		PTB.NewMatchTime = 5

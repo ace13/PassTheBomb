@@ -16,8 +16,6 @@ Teams.Colors = {
 }
 
 Teams.TeamIDs = {
--- For some reason, lots of things break when not all players change teams.
--- So we disable the radiant team after team selection. Not really a fix though...
 	DOTA_TEAM_GOODGUYS,
 	DOTA_TEAM_BADGUYS,
 	DOTA_TEAM_CUSTOM_1,

@@ -35,7 +35,7 @@ function UpdateScoreboard()
 
 	UpdateScoreboard();
 
-	GameEvents.Subscribe( "teams_changed", function() {
+	GameEvents.Subscribe( "ptb_teams_changed", function() {
 		$.Msg( "Teams were changed!" );
 		$( "#MultiteamScoreboard" ).RemoveAndDeleteChildren();
 

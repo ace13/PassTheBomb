@@ -4,7 +4,8 @@ Mode.Name = "Super Toss"
 function Mode:Init()
 	print( "Toss:Init" )
 
-	self.Listener = ListenToGameEvent( "ptb_bomb_pass", Dynamic_Wrap( self, 'BombPassed' ), self )
+	GameRules:SetTimeOfDay( 0.26 )
+	self.Listener = ListenToGameEvent( "ptb_bomb_passed", Dynamic_Wrap( self, 'BombPassed' ), self )
 end
 
 function Mode:Start()
@@ -18,7 +19,7 @@ function Mode:Cleanup()
 end
 
 function Mode:BombPassed( event )
-	local to = event.new_carrier
+	local to = PlayerRegistry:GetPlayer( { UserID = event.new_carrier } )
 
 	to:SetAbilityLevel( "techies_pass_the_bomb", 2 )
 end

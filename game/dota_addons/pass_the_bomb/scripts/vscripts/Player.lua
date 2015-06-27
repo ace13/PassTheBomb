@@ -1,12 +1,10 @@
 if not Player then
 	Player = class({ })
-	getmetatable( Player ).__tostring = Player.ToString
 end
 
 VISION_DAY = 0
 VISION_NIGHT = 1
 VISION_CURRENTLY = 2
-
 
 function Player.Create( playerID )
 	local ply = Player()
@@ -40,11 +38,7 @@ function Player:_InitHero( entity )
 
 	self.HeroEntity = entity
 	self.HeroEntity.Player = self
-
-	self.HeroEntity:SetControllableByPlayer( self.UserID, true )
-	self.HeroEntity:SetPlayerID( self.UserID )
 	
-	self.HeroEntity:SetAngles( 0, math.random(360), 0 )
 	self.HeroEntity:SetAbilityPoints( 0 )
 	self.HeroEntity:SetGold( 0, false )
 
@@ -64,7 +58,8 @@ end
 function Player:_InitTeam()
 	--print( "Player:_InitTeam" )
 
-	self:SetTeam( DOTA_TEAM_CUSTOM_MAX )
+	local teamid = PlayerResource:GetTeam( self.UserID )
+	self:SetTeam( teamid )
 end
 
 
@@ -77,13 +72,12 @@ function Player:IsAlive()
 	return IsValidEntity( self.HeroEntity ) and self.HeroEntity:IsAlive() or false
 end
 
+-- Teams
 function Player:GetTeam()
 	return PlayerResource:GetCustomTeamAssignment( self.UserID )
 end
 
 function Player:SetTeam( teamID )
-	if not teamID then return end
-
 	PlayerResource:SetCustomTeamAssignment( self.UserID, teamID )
 	self.Team = PlayerResource:GetCustomTeamAssignment( self.UserID )
 
@@ -92,11 +86,18 @@ function Player:SetTeam( teamID )
 		error( self.Name .. " failed to set team to " .. teamID .. "!" )
 	end
 
+	if Teams.Colors[ self.Team ] then
+		local col = Teams.Colors[ self.Team ]
+		PlayerResource:SetCustomPlayerColor( self.UserID, col[ 1 ], col[ 2 ], col[ 3 ] )
+	end
+
 	if IsValidEntity( self.HeroEntity ) then
 		self.HeroEntity:SetTeam( self.Team )
+		self.HeroEntity:SetPlayerID( self.UserID )
 	end
 end
 
+-- Speed
 function Player:GetBaseSpeed()
 	if not self.BaseMove and IsValidEntity( self.HeroEntity ) then
 		self.BaseMove = self.HeroEntity:GetBaseMoveSpeed()
@@ -115,6 +116,7 @@ function Player:SetSpeed( speed )
 	self.HeroEntity:SetBaseMoveSpeed( speed )
 end
 
+-- Vision
 local function GetCurrentVision()
 	local time = GameRules:GetTimeOfDay( )
 	if time > 0.25 and time < 0.75 then
@@ -167,7 +169,7 @@ function Player:SetVisionMod( mod, vision )
 	self:SetVision( range * mod, vision )
 end
 
--- Inventory handling
+-- Inventory
 function Player:AddItem( item )
 	if not IsValidEntity( self.HeroEntity ) then return end
 
@@ -221,7 +223,7 @@ function Player:RemoveItem( item )
 	self.HeroEntity:RemoveItem( item )
 end
 
--- Ability handling
+-- Abilities
 function Player:HasAbility( ability )
 	return IsValidEntity( self.HeroEntity ) and self.HeroEntity:HasAbility( ability ) or false
 end
@@ -264,7 +266,7 @@ function Player:OnConnected( event )
 end
 
 function Player:OnConnectedFull( event )
-
+	print( self.Name .. " connected fully!" )
 end
 
 function Player:OnDied( event )
@@ -313,28 +315,6 @@ function Player:OnJoinedTeam( event )
 
 	if IsValidEntity( self.HeroEntity ) then
 		self.HeroEntity:SetTeam( self.Team )
-		self.HeroEntity:SetPlayerID( self.UserID )
-
-		for i = 0, PlayerResource:GetPlayerCount() - 1 do
-			if i ~= self.UserID then
-				self.HeroEntity:SetControllableByPlayer( i, false )
-			end
-		end
-	end
-
-	if IsValidEntity( self.PlayerEntity ) then
-		local newID = self.PlayerEntity:GetPlayerID()
-		if newID ~= self.UserID then
-			if newID == -1 then
-				PrintTable( self )
-				print( self.Name .. " trying to set -1 playerid, why?" )
-				return
-			end
-
-			print( self.Name .. " is changing ID from " .. self.UserID .. " to " .. newID )
-
-			self.UserID = newID
-		end
 	end
 end
 
@@ -343,9 +323,10 @@ function Player:OnKilled( event )
 end
 
 function Player:OnSpawned( event )
-	if not self.FirstSpawn then
-		self.FirstSpawn = true
-		self:_InitHero( EntIndexToHScript( event.entindex ) )
+	local hero = EntIndexToHScript( event.entindex )
+
+	if not IsValidEntity( self.HeroEntity ) or hero ~= self.HeroEntity then
+		self:_InitHero( hero )
 
 		print( self.Name .. " spawned!" )
 	else
@@ -353,146 +334,7 @@ function Player:OnSpawned( event )
 	end
 
 	self.Alive = true
+	self.HeroEntity:SetAngles( 0, math.random(360), 0 )
 
 	PrintTable( self )
 end
-
-
---[[
---   Utility functions
---]]
-
-function Player:ToString()
-	return FormatTable( self )
-end
-
---[[
-function Player:OnConnect( event )
-	self.Entity = EntIndexToHScript( event.index + 1 )
-
-	if not IsValidEntity( self.Entity ) then
-		error( "Invalid player entity!" )
-		return
-	end
-
-	self:Validate( event )
-
-	if self.Reconnecting then
-		self.Reconnecting = nil
-
-		print( "Player " .. self.Name .. " returns to the fray." )
-
-		PTB:ReturningPlayer( self )
-	end
-end
-
-function Player:OnDisconnect( event )
-	self:Validate( event )
-
-	print( "Player " .. self.Name .. " left the game." )
-
-	if IsValidEntity( self.Entity ) and IsValidEntity( self.Entity:GetAssignedHero() ) then
-		PTB:ExplodePlayer( self, self.Hero:FindAbilityByName( "techies_pass_the_bomb" ), self )
-	end
-
-	PTB:PlayerDisconnected( self )
-end
-
-function Player:OnReconnect( event )
-	self.Reconnecting = true
-end
-
-function Player:OnSpawn( event )
-	if IsValidEntity( self.Hero ) then
-		print( "Player " .. self.Name .. " is respawning." )
-
-		self.Hero:SetAngles( 0, math.random(360), 0 )
-
-		return
-	end
-
-	print( "Player " .. self.Name .. " is spawning." )
-
-	self.Hero = EntIndexToHScript( event.entindex )
-	self:Validate( event )
-
-	self.Hero:SetAngles( 0, math.random(360), 0 )
-	self:InitTeam()
-
-	self.Hero:SetAbilityPoints( 0 )
-
-	local ability = self.Hero:FindAbilityByName( "techies_blink" )
-	ability:SetLevel( 1 )
-
-	-- local ability = self.Hero:FindAbilityByName( "techies_pass_the_bomb" )
-end
-
-function Player:OnJoinTeam( event )
-	self:Validate( event )
-
-	print( "Player " .. self.Name .. " joins team " .. event.team .. "." )
-end
-
-function Player:InitTeam()
-	local id = PlayerResource:GetCustomTeamAssignment( self.UserID )
-	self:SetTeam( id )
-end
-
-function Player:SetTeam( teamid )
-	if not teamid then return end
-
-	self:Validate()
-
-	local id = PlayerResource:GetCustomTeamAssignment( self.UserID )
-	if id ~= teamid then
-		print( "Setting player " .. self.UserID .. " from team " .. id .. " to " .. teamid )
-		PlayerResource:SetCustomTeamAssignment( self.UserID, teamid )
-	end
-
-	self.Team = PlayerResource:GetCustomTeamAssignment( self.UserID )
-
-	if IsValidEntity( self.Hero ) then
-		self.Hero:SetTeam( self.Team )
-	end
-
-	if Teams.Colors[ teamid ] then
-		local col = Teams.Colors[ teamid ]
-		PlayerResource:SetCustomPlayerColor( self.UserID, col[ 1 ], col[ 2 ], col[ 3 ] )
-	end
-end
-
-function Player:Validate( event )
-	if event then
-		if not self.UserID and event.userid then self.UserID = event.userid end
-		if not self.Name and event.name then self.Name = event.name end
-	end
-
-	if self.Hero then
-		if not self.Entity then self.Entity = self.Hero:GetPlayerOwner() end
-		if not self.Hero.Player then self.Hero.Player = self end
-	end
-
-	if self.Entity then
-		if not self.UserID then self.UserID = self.Entity:GetUserID() end
-	end
-
-	if not self.ID then PTB:RegisterPlayer( self ) end
-
-	print( "Player:Validate" )
-	print( "> " .. self:__tostring() )
-end
-
-function Player:__tostring()
-	local ret = ""
-
-	if self.ID then ret = "#" .. self.ID .. " " end
-	if self.Name then ret = ret .. self.Name .. " " end
-	if self.UserID then ret = ret .. "(" .. self.UserID .. ") " end
-	ret = ret .. "{\n"
-	if self.Entity then ret = ret .. "  UserID: " .. self.Entity:GetUserID() .. "\n" end
-	if self.Hero then ret = ret .. "  Hero: " .. tostring( self.Hero ) .. "\n" end
-	ret = ret .. "}"
-
-	return ret
-end
-]]

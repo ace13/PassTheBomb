@@ -2,6 +2,7 @@
 {
 	maps         "ptb_summer"
 	"IsPlayable" "1"
+	"TeamCount" "10"
 	"ptb_summer"
 	{
 		"MaxPlayers" "10"

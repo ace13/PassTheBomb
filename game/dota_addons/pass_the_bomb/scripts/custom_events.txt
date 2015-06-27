@@ -26,10 +26,7 @@
 
 	"ptb_bomb_passed"
 	{
-		"local"       "1"
-
-		"old_carrier" "local"
-		"new_carrier" "local"
-		"bomb"        "local"
+		"old_carrier" "short"
+		"new_carrier" "short"
 	}
 }
