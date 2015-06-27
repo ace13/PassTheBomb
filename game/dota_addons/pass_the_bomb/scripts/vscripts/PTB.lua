@@ -1,7 +1,5 @@
 if not PTB then
-	local PTBGamemode = class({})
-	PTB = PTBGamemode()
-	PTB.GamemodeClass = PTBGamemode
+	PTB = { }
 end
 
 PTB.TYPE_FFA = 1
@@ -20,10 +18,12 @@ function PTB:Init()
 	print( "Loading modules:" )
 	LoadModule( "Bomb" )
 	LoadModule( "Player" )
+	LoadModule( "PlayerRegistry" )
 	LoadModule( "Teams" )
 	LoadModule( "Timers" )
 
-	PTB.Game = self
+	PlayerRegistry:Init()
+
 	PTB.LastTick = GameRules:GetGameTime()
 	PTB.ModeNames = {
 		"Normal",
@@ -37,41 +37,41 @@ function PTB:Init()
 	local time_txt = string.gsub(string.gsub(GetSystemTime(), ':', ''), '0','')
 	math.randomseed(tonumber(time_txt))
 
-	ListenToGameEvent( 'dota_item_picked_up', Dynamic_Wrap( self, 'EventItemPickup' ),         self )
-	ListenToGameEvent( 'dota_player_gained_level', Dynamic_Wrap( self, 'EventGainLevel' ),     self )
-	ListenToGameEvent( 'game_rules_state_change', Dynamic_Wrap( self, 'EventStateChanged' ),   self )
-	ListenToGameEvent( 'player_connect_full', Dynamic_Wrap( self, 'EventPlayerConnected' ),    self )
-	ListenToGameEvent( 'player_team',         Dynamic_Wrap( self, 'EventPlayerJoinedTeam' ),   self )
-	ListenToGameEvent( 'player_disconnect',   Dynamic_Wrap( self, 'EventPlayerDisconnected' ), self )
-	ListenToGameEvent( 'player_reconnected',  Dynamic_Wrap( self, 'EventPlayerReconnected' ),  self )
-	ListenToGameEvent( 'npc_spawned',         Dynamic_Wrap( self, 'EventNPCSpawned' ),         self )
+	ListenToGameEvent( 'dota_item_picked_up', Dynamic_Wrap( PTB, 'EventItemPickup' ),         PTB )
+	ListenToGameEvent( 'dota_player_gained_level', Dynamic_Wrap( PTB, 'EventGainLevel' ),     PTB )
+	ListenToGameEvent( 'game_rules_state_change', Dynamic_Wrap( PTB, 'EventStateChanged' ),   PTB )
+	ListenToGameEvent( 'player_connect_full', Dynamic_Wrap( PTB, 'EventPlayerConnected' ),    PTB )
+	ListenToGameEvent( 'player_team',         Dynamic_Wrap( PTB, 'EventPlayerJoinedTeam' ),   PTB )
+	ListenToGameEvent( 'player_disconnect',   Dynamic_Wrap( PTB, 'EventPlayerDisconnected' ), PTB )
+	ListenToGameEvent( 'player_reconnected',  Dynamic_Wrap( PTB, 'EventPlayerReconnected' ),  PTB )
+	ListenToGameEvent( 'npc_spawned',         Dynamic_Wrap( PTB, 'EventNPCSpawned' ),         PTB )
 
 	-- Game rules
-	if ConVars:GetInt( "sv_cheats" ) == 1 then
+	-- [[
+	if Convars:GetInt( "sv_cheats" ) == 1 then
 		GameRules:SetCustomGameTeamMaxPlayers( DOTA_TEAM_GOODGUYS, 10 ) -- For dota_create_fake_clients
+		GameRules:SetCustomGameTeamMaxPlayers( DOTA_TEAM_BADGUYS, 0 )
 	else
-		GameRules:SetCustomGameTeamMaxPlayers( DOTA_TEAM_GOODGUYS, 9 )
+		Teams:Init()
 	end
-	GameRules:SetCustomGameTeamMaxPlayers( DOTA_TEAM_BADGUYS, 0 )
+	--GameRules:SetCustomGameTeamMaxPlayers( DOTA_TEAM_BADGUYS, 0 )
+	--]]
 	GameRules:SetCustomVictoryMessage( "Boom! Hahahaha" )
-	GameRules:SetHideKillMessageHeaders( true )
+	--GameRules:SetHideKillMessageHeaders( true )
 
 	GameRules:SetGoldPerTick( 0 )
 	GameRules:SetHeroRespawnEnabled( false )
 	GameRules:SetPreGameTime( 30 )
 	GameRules:SetSameHeroSelectionEnabled( true )
-
-	--GameRules:SetFirstBloodActive( true )
+	GameRules:SetFirstBloodActive( false )
 
 	-- Gamemode settings
 	local gamemode = GameRules:GetGameModeEntity()
 	gamemode:SetAnnouncerDisabled( true )
 	gamemode:SetBuybackEnabled( false )
 	gamemode:SetCustomGameForceHero( "npc_dota_hero_techies" )
-	gamemode:SetCustomHeroMaxLevel( 0 )
-	gamemode:SetRecommendedItemsDisabled( true )
-
-	gamemode:SetThink( "OnTick", self )
+	--gamemode:SetCustomHeroMaxLevel( 0 )
+	--gamemode:SetRecommendedItemsDisabled( true )
 
 	-- Load modes
 	print( "Loading modes:" )
@@ -83,12 +83,13 @@ function PTB:Init()
 	print( "Creating Da Bomb" )
 
 	PTB.Bomb = Bomb()
+	PTB.Bomb:Drop()
 end
 
 
---[[-----------------------------------
--- Game mode handling
--------------------------------------]]
+--[[
+--   Round handling
+--]]
 
 function PTB:PickMode()
 	if not PTB.LastMode then
@@ -108,23 +109,24 @@ end
 function PTB:BeginRound( skip_time )
 	PTB.State = PTB.STATE_PREROUND
 	PTB.CurMode = PTB:PickMode()
+	PTB.CurMode:Init()
 
 	if not skip_time then
-		PTB.Bomb:Reset( true )
-		CreateItemOnPositionSync( Entities:FindByName( nil, "bomb_spawn" ):GetAbsOrigin(), PTB.Bomb.Item )
+		PTB.Bomb:Drop()
 
 		Say( nil, PTB.CurMode.Name .. " mode in " .. PTB.NewRoundTime .. " seconds", false )
 	end
 
 	Timers:CreateTimer( skip_time and 0 or PTB.NewRoundTime, function() 
-		PTB.Bomb:Reset( true )
+		PTB.Bomb:Take()
 		PTB.State = PTB.STATE_ROUND
 
 		PTB.CurMode.StartTime = GameRules:GetGameTime()
-		PTB.CurMode:Init()
+		PTB.CurMode:Start()
 
-		local luckyGuy = PTB:FindRandomAlivePlayer()
-		PTB.Bomb:Pass( luckyGuy.Hero )
+		local living = PlayerRegistry:GetAlivePlayers()
+		local luckyGuy = living[ math.random( #living ) ]
+		PTB.Bomb:Pass( luckyGuy )
 
 		Say( nil, luckyGuy.Name .. " is the lucky guy.", false)
 	end )
@@ -141,11 +143,15 @@ function PTB:EndRound()
 
 	PTB.LastMode = mode
 
-	local alive = PTB:AlivePlayers()
+	local alive = PlayerRegistry:GetAlivePlayers()
 	if #alive == 1 then
-		Say( nil, alive[ 1 ].Name .. " wins this one, next match in " .. PTB.NewMatchTime .. " seconds", false )
+		Say( nil, alive[ 1 ].Name .. " survived this one, next match in " .. PTB.NewMatchTime .. " seconds", false )
+		alive[ 1 ].Score = alive[ 1 ].Score + 1
 
-		alive[ 1 ].Points = alive[ 1 ].Points + 1
+		if alive[ 1 ].Score >= 10 then
+			Say( nil, alive[ 1 ].Name .. " has proven to be a cockroach by surviving ten matches!", false )
+			GameRules:SetGameWinner( alive[ 1 ].Team )
+		end
 	elseif #alive == 0 then
 		Say( nil, "You all died, that's pretty sad...", false )
 		Say( nil, "Next match in " .. PTB.NewMatchTime .. " seconds.", false )
@@ -153,18 +159,18 @@ function PTB:EndRound()
 
 	if #alive <= 1 then
 		Timers:CreateTimer( ( PTB.NewMatchTime - PTB.NewRoundTime ), function() 
-			GameRules:SetHeroRespawnEnabled( true )
+			--GameRules:SetHeroRespawnEnabled( true )
 
-			for _,p in pairs( PTB:DeadPlayers() ) do
+			for _,p in pairs( PlayerRegistry:GetDeadPlayers() ) do
 				if p.State == Player.STATE_CONNECTED then
 					--p.Hero:RespawnHero( false, false, false ) -- Why does this crash the map?
-					p.Hero:RespawnUnit()
+					p.HeroEntity:RespawnUnit()
 				end
 			end
 
-			GameRules:SetHeroRespawnEnabled( false )
+			--GameRules:SetHeroRespawnEnabled( false )
 
-			GameRules:SetFirstBloodActive( false )
+			--GameRules:SetFirstBloodActive( false )
 			PTB:BeginRound()
 		end )
 	else
@@ -174,113 +180,20 @@ function PTB:EndRound()
 	end
 end
 
-function PTB:OnTick()
-	local tick = GameRules:GetGameTime()
-	local dt = tick - PTB.LastTick
-	PTB.LastTick = tick
 
-	if PTB.Bomb then PTB.Bomb:OnTick() end
+--[[
+--   Player handling
+--]]
 
-	if PTB.CurMode and PTB.CurMode.OnTick then
-		local ret = PTB.CurMode:OnTick()
+function PTB:ExplodePlayer( player, caster )
+	print( player.Name .. " goes asplodey" )
 
-		if ret ~= nil then
-			return ret
-		end
-	end
-
-	return 1
-end
-
-
---[[-----------------------------------
--- Player handling
--------------------------------------]]
-
-function PTB:AlivePlayers()
-	local ret = { }
-
-	for _,p in pairs( PTB.Players ) do
-		if IsValidEntity( p.Hero ) and p.Hero:IsAlive() then
-			ret[ #ret + 1 ] = p
-		end
-	end
-
-	return ret
-end
-
-function PTB:DeadPlayers()
-	local ret = { }
-
-	for _,p in pairs( PTB.Players ) do
-		if IsValidEntity( p.Hero ) and not p.Hero:IsAlive() then
-			ret[ #ret + 1 ] = p
-		end
-	end
-
-	return ret
-end
-
-function PTB:FindPlayer( search )
-	if not search or type( search ) ~= "table" then return nil end
-	if not search.State then search.State = Player.STATE_CONNECTED end
-
-	for _,p in pairs( PTB.Players ) do
-		if	( search.Entity   and p.Entity == search.Entity ) or
-			( search.Index    and p.Index  == search.Index ) or
-			( search.Name     and p.Name   == search.Name ) or
-			( search.Player   and p.Entity == search.Player ) or
-			( search.PlayerID and p.Entity and p.Entity:GetPlayerID() == search.PlayerID ) or
-			( search.UserID   and p.UserID == search.UserID) then
-			return p
-		end
-	end
-
-	-- print( "Search failed to find a player, creating one.")
-	return Player()
-end
-
-function PTB:FindRandomAlivePlayer()
-	local ret = PTB:AlivePlayers()
-
-	if #ret == 0 then return nil end
-
-	return ret[ math.random(#ret) ]
-end
-
-function PTB:RegisterPlayer( player )
-	if not PTB.Players then PTB.Players = {} end
-
-	print( "Registering player #" .. player.ID )
-	PTB.Players[ player.ID ] = player
-end
-
-function PTB:ReturningPlayer( player )
-	player.State = Player.STATE_CONNECTED
-end
-
-function PTB:PlayerDisconnected( player )
-	player.State = Player.STATE_DISCONNECTED
-end
-
-function PTB:ExplodePlayer( player, ability, caster )
-	local target = nil
-	if player.Hero then
-		target = player.Hero
-	else
-		target = player
-	end
-
-	if not IsValidEntity( target ) then return end
-
-	print( target.Player.Name .. " goes asplodey" )
-
-	local ability = target:FindAbilityByName( "techies_explode" )
+	local ability = player:GetAbility( "techies_explode" )
 	ability:SetLevel( 1 )
 	ability:CastAbility()
 	ability:SetLevel( 0 )
 
-	target:Kill( ability, caster )
+	player.HeroEntity:Kill( caster:GetAbility( "techies_pass_the_bomb" ), caster.HeroEntity )
 end
 
 
@@ -290,90 +203,150 @@ end
 
 function PTB:EventGainLevel( event )
 	print( "PTB:EventGainLevel" )
-	-- DeepPrintTable( event )
+	PrintTable( event )
 
-	local p = PTB:FindPlayer( { UserID = event.player } )
+	local player = PlayerRegistry:GetPlayer( {
+		PlayerID = event.userid
+	} )
 
-	p.Hero:SetAbilityPoints( 0 )
+	if player then player:OnGainedLevel( event ) end
 end
 
 function PTB:EventItemPickup( event )
 	print( "PTB:EventItemPickup" )
-	--DeepPrintTable( event )
+	PrintTable( event )
 
-	local item = EntIndexToHScript( event.ItemEntityIndex )
-	local hero = EntIndexToHScript( event.HeroEntityIndex )
+	local player = PlayerRegistry:GetPlayer( {
+		UserID = event.PlayerID
+	} )
 
-	if item == PTB.Bomb.Item then
-		print( hero.Player.Name .. " picked up the bomb, the idiot" )
-
-		hero:RemoveItem( PTB.Bomb.Item )
-		PTB.Bomb:Pass( hero )
-	end
+	if player then player:OnItemPickedup( event ) end
 end
 
 function PTB:EventNPCSpawned( event )
 	print( "PTB::EventNPCSpawned" )
-	--DeepPrintTable( event )
+	PrintTable( event )
 
 	local npc = EntIndexToHScript( event.entindex )
 
-	if not npc:IsHero() then return end
+	if not IsValidEntity( npc) or not npc:IsHero() then return end
 
-	local p = PTB:FindPlayer( { UserID = npc:GetPlayerID() + 1 } )
+	local player = PlayerRegistry:GetPlayer( {
+		Hero = npc
+	} )
 
-	p:OnSpawn( event )
+	if not player then
+		player = PlayerRegistry:RegisterPlayer( Player.Create( npc:GetPlayerID() ) )
+	end
+
+	player:OnSpawned( event )
 end
 
 function PTB:EventPlayerConnected( event )
 	print( "PTB:EventPlayerConnected" )
-	--DeepPrintTable( event )
+	PrintTable( event )
 
-	local p = PTB:FindPlayer( { UserID = event.userid } )
+	local player = PlayerRegistry:GetPlayer( {
+		PlayerID = event.userid
+	} )
 
-	p:OnConnect( event )
+	if player then player:OnConnected( event ) end
 end
 
 function PTB:EventPlayerDisconnected( event )
 	print( "PTB:EventPlayerDisconnected" )
-	DeepPrintTable( event )
+	PrintTable( event )
 
-	local p = PTB:FindPlayer( { UserID = event.userid } )
+	local player = PlayerRegistry:GetPlayer( {
+		PlayerID = event.userid
+	} )
 
-	p:OnDisconnect( event )
+	if player then player:OnDisconnected( event ) end
 end
 
 function PTB:EventPlayerJoinedTeam( event )
 	print( "PTB:EventPlayerJoinedTeam" )
-	--DeepPrintTable( event )
+	PrintTable( event )
 
-	local p = PTB:FindPlayer( { UserID = event.userid } )
+	local player = PlayerRegistry:GetPlayer( {
+		PlayerID = event.userid
+	} )
 
-	p:OnJoinTeam( event )
+	if player then
+		player:OnJoinedTeam( event )
+	else
+		PlayerRegistry:PrimeName( event.userid - 1, event.name )
+	end
 end
 
 function PTB:EventStateChanged( event )
 	print( "PTB:EventStateChanged" )
+	--PrintTable( event )
+
 	local state = GameRules:State_Get()
-	--print( state )
+	print( "State: " .. state )
 
 	if state == DOTA_GAMERULES_STATE_INIT then
+		print( "  State: INIT" )
 	elseif state == DOTA_GAMERULES_STATE_HERO_SELECTION then
-		
-	elseif state == DOTA_GAMERULES_STATE_PRE_GAME then
-		Timers:CreateTimer(4, function()
-			if PTB.Type == PTB.TYPE_FFA then
-				Teams:Init()
-				CustomGameEventManager:Send_ServerToAllClients( "teams_changed", { } )
+		print( "  State: HERO_SELECTION" )
+		--[[
+		local i = 0
+		Timers:CreateTimer( 2, function()
+			if i < PlayerResource:GetPlayerCount() then
+				local ply = PlayerResource:GetPlayer( i )
+				print( i .. ": " .. tostring( ply ) .. " (" .. ( IsValidEntity( ply ) and "is valid" or "is not valid" ) .. ")" )
 
-				for _, p in pairs( PTB.Players ) do
-					p:SetTeam( Teams.TeamIDs[ p.ID + 1 ] )
+				local hero = CreateHeroForPlayer( "npc_dota_hero_techies", ply )
+				hero:SetControllableByPlayer( i, true )
+				hero:SetPlayerID( i )
+
+				i = i + 1
+				return 2
+			else
+				return
+			end
+		end)
+		--]]
+	elseif state == DOTA_GAMERULES_STATE_PRE_GAME then
+		print( "  State: PRE_GAME" )
+		-- [[
+		if Convars:GetInt( "sv_cheats" ) == 1 then
+			Timers:CreateTimer(4, function()
+				if PTB.Type == PTB.TYPE_FFA then
+					Teams:Init()
+					CustomGameEventManager:Send_ServerToAllClients( "teams_changed", { } )
+
+					for _, p in pairs( PlayerRegistry:GetAllPlayers() ) do
+						p:SetTeam( Teams.TeamIDs[ p.ID ] )
+					end
 				end
+			end )
+		end
+		--]]
+		--[[
+		local i = 0
+		Timers:CreateTimer(4, function()
+			if i < PlayerResource:GetPlayerCount() then
+				local ply = PlayerResource:GetPlayer( i )
+				print( i .. ": " .. tostring( ply ) .. " (" .. ( IsValidEntity( ply ) and "is valid" or "is not valid" ) .. ")" )
+
+				if IsValidEntity( ply:GetAssignedHero() ) then
+					print( "> Has hero" )
+				else
+					local hero = CreateHeroForPlayer( "npc_dota_hero_techies", ply )
+				end
+
+				i = i + 1
+				return 2
+			else
+				return
 			end
 		end )
-		
+		--]]
 		Say( nil, "First round starts in 30 seconds, get ready.", false )
 	elseif state == DOTA_GAMERULES_STATE_GAME_IN_PROGRESS then
+		print( "  State: GAME_IN_PROGRESS" )
 		PTB:BeginRound( true )
 	end
 end

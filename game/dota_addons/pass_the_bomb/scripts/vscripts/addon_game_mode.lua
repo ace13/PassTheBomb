@@ -9,7 +9,8 @@ function Precache( context )
 	-- PrecacheResource( "soundfile", "*.vsndevts", context )
 	-- PrecacheResource( "particle", "*.vpcf", context )
 
-	PrecacheResource( "model", "models/heroes/techies/fx_techies_remotebomb.vmdl", context )
+	PrecacheUnitByNameSync( "npc_dota_hero_techies", context )
+	--PrecacheResource( "model", "models/heroes/techies/fx_techies_remotebomb.vmdl", context )
 end
 
 -- Create the game mode when we activate
@@ -24,13 +25,14 @@ function Activate()
 	end, "Next round", 0 )
 
 	Convars:RegisterCommand( "ptb_test", function(...)
-		PTB.Type = PTB.TYPE_TEST
+		PlayerRegistry:GetPlayer().Score = 10
 	end, "Test, go", 0 )
 
 	Convars:RegisterCommand( "ptb_fast", function(...)
-		PTB.RoundTime = 5
-		PTB.NewRoundTime = 5
-		PTB.NewMatchTime = 10
+		PTB.RoundTime = 1
+		PTB.NewRoundTime = 1
+		PTB.NewMatchTime = 5
+		GameRules:SetPreGameTime( 5 )
 
 		Say( nil, "Sanic mode: ACTIVE! (May god have mercy on your souls)", false )
 	end, "Gotta go fast", 0 )

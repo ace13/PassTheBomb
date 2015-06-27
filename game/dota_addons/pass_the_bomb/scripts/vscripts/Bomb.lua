@@ -1,11 +1,18 @@
 Bomb = class({
-	OnPasses = { },
 	constructor = function(self)
-		self.Item = CreateItem( "item_bomb", nil, nil )
-
-		CreateItemOnPositionSync( Entities:FindByName( nil, "bomb_spawn" ):GetAbsOrigin(), self.Item )
+		self:Init()
 	end
 })
+
+
+function Bomb:Init()
+	self:_Reset()
+end
+
+function Bomb:Drop()
+	self:_Reset()
+	CreateItemOnPositionSync( Entities:FindByName( nil, "bomb_spawn" ):GetAbsOrigin(), self.Item )
+end
 
 function Bomb:GetCarrier()
 	if IsValidEntity( self.Carrier ) then
@@ -15,22 +22,11 @@ function Bomb:GetCarrier()
 	end
 end
 
-function Bomb:AddOnPass( id, func )
-	self.OnPasses[ id ] = func
-end
-
-function Bomb:RemoveOnPass( id )
-	self.OnPasses[ id ] = nil
-end
-
-function Bomb:Reset( full )
-	if full then
-		self.Carrier = nil
-		self.LastCarrier = nil
-	end
-
-	self:Take( true )
+function Bomb:_Reset()
+	self.Carrier = nil
 	self.Item = CreateItem( "item_bomb", nil, nil )
+	self.Item.Bomb = self
+	self.LastCarrier = nil
 end
 
 function Bomb:StartCountdown()
@@ -38,42 +34,38 @@ function Bomb:StartCountdown()
 
 	self.ExplodePoint = GameRules:GetGameTime() + PTB.RoundTime
 	self.Countdown = true
+
+	Timers:CreateTimer( function() return self:OnTick() end )
 end
 
 function Bomb:Explode()
-	local reason = IsValidEntity( self.LastCarrier ) and self.LastCarrier or self.Carrier
-	PTB:ExplodePlayer( self.Carrier, reason:FindAbilityByName( "techies_pass_the_bomb" ), reason  )
+	if self.Countdown then self.Countdown = nil end
+
+	local reason = self.LastCarrier and self.LastCarrier or self.Carrier
+	PTB:ExplodePlayer( self.Carrier, reason  )
 
 	self:Take()
 	PTB:EndRound()
 end
 
 function Bomb:OnTick()
-	--[[
-	-- FIXME: Allow picking up.
-	if self:Carrier() ~= self.LastCarrier and IsValidEntity( self.Item:GetOwner() ) then
-		print( self:Carrier().Player.Name .. " picked up the bomb" )
-		self:Give( self:Carrier() )
-	end
-	]]
+	local timeLeft = self.ExplodePoint - GameRules:GetGameTime()
 
-	-- TODO: Countdown
-	if self.Countdown then
-		local timeLeft = self.ExplodePoint - GameRules:GetGameTime()
+	if timeLeft <= 0 then
+		self:Explode()
 
-		if timeLeft <= 0 then
-			self:Explode()
-			self.Countdown = nil
-		else
-			Say(nil, "Time left: " .. math.ceil( timeLeft ), false)
-		end
+		return
+	else
+		Say(nil, "Time left: " .. math.ceil( timeLeft ), false)
+
+		return 1
 	end
 end
 
 function Bomb:Take( skip )
-	if IsValidEntity( self.Carrier ) then
-		self.Carrier:FindAbilityByName( "techies_pass_the_bomb" ):SetLevel(0)
+	if self.Carrier then
 		self.Carrier:RemoveItem( self.Item )
+		self.Carrier = nil
 	end
 
 	if IsValidEntity( self.Item ) then
@@ -83,38 +75,44 @@ function Bomb:Take( skip )
 		end
 
 		if IsValidEntity( self.Item:GetOwner() ) then
+			local owner = self.Item:GetOwner()
+
 			print( "Taking from owner" )
-			self.Item:GetOwner():FindAbilityByName( "techies_pass_the_bomb" ):SetLevel(0)
-			self.Item:GetOwner():RemoveItem( self.Item )
+			owner.Player:RemoveItem( self.Item )
 		end
 	end
 
-	if not skip then self:Reset() end
+	self:_Reset()
 end
 
-function Bomb:Pass( hero, from )
-	if (not from or from == self.Carrier) and hero ~= self.Carrier then
-		if IsValidEntity( self.Carrier ) then
-			self.Carrier:FindAbilityByName( "techies_pass_the_bomb" ):SetLevel(0)
-			self.Carrier:RemoveItem( self.Item )
+function Bomb:Pass( player, from )
+	if IsValidEntity( player ) then
+		player = player.Player
+	end
 
-			self:Reset()
+	if (not from or from == self.Carrier) and player ~= self.Carrier then
+		if self.Carrier then
+			local old = self.Carrier
+			old:RemoveItem( self.Item )
 
-			self.LastCarrier = self.Carrier
+			self:_Reset()
+
+			self.LastCarrier = old
 		end
 
-		hero:AddItem( self.Item )
+		player:AddItem( self.Item )
+		self.Carrier = player
 
 		if not self.Countdown then
 			self:StartCountdown()
 		end
-		self.Carrier = hero
-		self.Carrier:FindAbilityByName( "techies_pass_the_bomb" ):SetLevel(1)
 
-		for _,v in pairs( self.OnPasses ) do
-			v( self.LastCarrier, self.Carrier, bomb )
-		end
+		FireGameEvent( "ptb_bomb_passed", {
+			old_carrier = self.LastCarrier,
+			new_carrier = self.Carrier,
+			bomb = self
+		} )
 
-		print( self.Carrier.Player.Name .. " got the bomb." )
+		print( self.Carrier.Name .. " got a bomb." )
 	end
 end

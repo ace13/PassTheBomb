@@ -4,19 +4,23 @@ Mode.Name = "Super Toss"
 function Mode:Init()
 	print( "Toss:Init" )
 
-	PTB.Bomb:AddOnPass( "SuperToss", function( from, to )
-		to:FindAbilityByName( "techies_pass_the_bomb" ):SetLevel( 2 )
-	end )
+	self.Listener = ListenToGameEvent( "ptb_bomb_pass", Dynamic_Wrap( self, 'BombPassed' ), self )
+end
+
+function Mode:Start()
+	print( "Toss:Start" )
 end
 
 function Mode:Cleanup()
 	print( "Toss:Cleanup" )
 
-	PTB.Bomb:RemoveOnPass( "SuperToss" )
+	StopListeningToGameEvent( self.Listener )
 end
 
-function Mode:OnTick()
-	GameRules:SetTimeOfDay( 0.5 )
+function Mode:BombPassed( event )
+	local to = event.new_carrier
+
+	to:SetAbilityLevel( "techies_pass_the_bomb", 2 )
 end
 
 return Mode

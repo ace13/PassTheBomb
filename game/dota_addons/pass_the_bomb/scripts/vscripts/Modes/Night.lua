@@ -3,16 +3,16 @@ Mode.Name = "Night"
 
 function Mode:Init()
 	print( "Night:Init" )
+	
+	GameRules:SetTimeOfDay( 0.76 )
+end
+
+function Mode:Start()
+	print( "Night:Start" )
 end
 
 function Mode:Cleanup()
 	print( "Night:Cleanup" )
-
-	GameRules:SetTimeOfDay( 0.26 )
-end
-
-function Mode:OnTick()
-	GameRules:SetTimeOfDay( 0 )
 end
 
 return Mode

@@ -6,7 +6,7 @@ function PassTheBomb( keys )
 	local ability = keys.ability
 
 	ability:EndCooldown()
-	PTB.Bomb:Pass( target, caster )
+	PTB.Bomb:Pass( target.Player, caster.Player )
 
 end
 

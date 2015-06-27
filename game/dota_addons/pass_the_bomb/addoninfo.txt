@@ -4,6 +4,6 @@
 	"IsPlayable" "1"
 	"ptb_summer"
 	{
-		"MaxPlayers" "9"
+		"MaxPlayers" "10"
 	}
 }
