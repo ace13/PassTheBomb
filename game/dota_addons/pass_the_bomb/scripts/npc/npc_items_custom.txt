@@ -15,6 +15,8 @@
 		"ItemQuality"        "artifact"
 		"ItemSellable"       "0"
 
+		"PingOverrideText"   "#PTB_Its_A_Bomb"
+
 		"Modifiers"
 		{
 			"modifier_item_bomb"
@@ -25,6 +27,29 @@
 				"States"
 				{
 					"MODIFIER_STATE_PROVIDES_VISION" "MODIFIER_STATE_VALUE_ENABLED"
+				}
+
+				"OnCreated"
+				{
+					"AttachEffect"
+					{
+						"EffectName"        "particles/units/heroes/hero_bounty_hunter/bounty_hunter_track_trail.vpcf"
+						"EffectAttachType"  "follow_origin"
+						"Target"            "TARGET"
+
+						"ControlPointEntities"
+						{
+							"TARGET"	"attach_origin"
+							"TARGET"	"attach_hitloc"
+						}
+					}
+
+					"AttachEffect"
+					{
+						"EffectName"        "particles/units/heroes/hero_bounty_hunter/bounty_hunter_track_shield.vpcf"
+						"EffectAttachType"  "follow_overhead"
+						"Target"            "TARGET"
+					}
 				}
 			}
 		}

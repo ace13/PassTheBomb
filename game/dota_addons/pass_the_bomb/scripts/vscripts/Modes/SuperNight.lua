@@ -12,6 +12,7 @@ end
 function Mode:Start()
 	for _, p in pairs( PlayerRegistry:GetAllPlayers() ) do
 		p:SetVisionMod( 0.6, VISION_NIGHT )
+		p:SetAbilityLevel( "techies_blink", 0 )
 	end
 end
 
@@ -22,6 +23,13 @@ function Mode:Cleanup()
 
 	for _, p in pairs( PlayerRegistry:GetAllPlayers() ) do
 		p:SetVisionMod( 1, VISION_NIGHT )
+		p:SetAbilityLevel( "techies_blink", 1 )
+	end
+
+	if RollPercentage( 50 ) then
+		self.Name = "Dankest of Nights"
+	else
+		self.Name = "Darkest of Nights"
 	end
 end
 
@@ -32,10 +40,12 @@ function Mode:BombPassed( event )
 	if from then
 		from:SetSpeed( from:GetBaseSpeed() )
 		from:SetVisionMod( 0.6, VISION_NIGHT )
+		from:SetAbilityLevel( "techies_blink", 0 )
 	end
 
 	to:SetSpeed( 2048 )
 	to:SetVisionMod( 0.5, VISION_NIGHT )
+	to:SetAbilityLevel( "techies_blink", 1 )
 end
 
 return Mode

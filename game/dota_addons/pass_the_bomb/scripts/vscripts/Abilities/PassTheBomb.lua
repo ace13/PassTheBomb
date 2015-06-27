@@ -1,6 +1,4 @@
 function PassTheBomb( keys )
-	--DeepPrintTable( keys )
-	
 	local caster = keys.caster
 	local target = keys.target
 	local ability = keys.ability
@@ -11,8 +9,6 @@ function PassTheBomb( keys )
 end
 
 function Refresh( keys )
-	--DeepPrintTable( keys )
-
 	local ability = keys.ability
 
 	ability:EndCooldown()

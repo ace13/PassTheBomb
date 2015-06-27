@@ -2,14 +2,11 @@ if not PTB then
 	PTB = { }
 end
 
-PTB.TYPE_FFA = 1
-PTB.TYPE_TEST = 2
-PTB.TYPE_TEAM = 3
-
 PTB.STATE_PREROUND  = 1
 PTB.STATE_ROUND     = 2
 PTB.STATE_POSTROUND = 3
 
+PTB.RoundLimit = 5
 PTB.RoundTime = 15
 PTB.NewRoundTime = 10
 PTB.NewMatchTime = 30
@@ -31,11 +28,11 @@ function PTB:Init()
 	PTB.ModeNames = {
 		"Normal",
 
-		"Blink", "Night", "Speed", "SuperNight", "Toss"
+		"Blink", "Forest", "Night",
+		"Speed", "SuperNight", "Toss"
 	}
 	PTB.Players = { }
 	PTB.State = PTB.STATE_PREROUND
-	PTB.Type = PTB.TYPE_FFA
 
 	local time_txt = string.gsub(string.gsub(GetSystemTime(), ':', ''), '0','')
 	math.randomseed(tonumber(time_txt))
@@ -51,17 +48,8 @@ function PTB:Init()
 	ListenToGameEvent( 'ptb_bomb_passed',     Dynamic_Wrap( PTB, 'EventBombPassed' ),         PTB )
 	ListenToGameEvent( 'npc_spawned',         Dynamic_Wrap( PTB, 'EventNPCSpawned' ),         PTB )
 
-	-- Game rules
-	-- [[
-	--if PTB.TESTING then
-		GameRules:SetCustomGameTeamMaxPlayers( DOTA_TEAM_GOODGUYS, 10 ) -- For dota_create_fake_clients
-		GameRules:SetCustomGameTeamMaxPlayers( DOTA_TEAM_BADGUYS, 0 )
-	--else
-	--	Teams:Init()
-	--end
-	--GameRules:SetCustomGameTeamMaxPlayers( DOTA_TEAM_BADGUYS, 0 )
-	--]]
-	--Teams:Init()
+	GameRules:SetCustomGameTeamMaxPlayers( DOTA_TEAM_GOODGUYS, 10 )
+	GameRules:SetCustomGameTeamMaxPlayers( DOTA_TEAM_BADGUYS, 0 )
 	GameRules:SetCustomVictoryMessage( "Boom! Hahahaha" )
 	--GameRules:SetHideKillMessageHeaders( true )
 
@@ -102,8 +90,11 @@ function PTB:PickMode()
 		return PTB.Modes.Normal -- Always start on normal mode
 	else
 		local alive = PlayerRegistry:GetAlivePlayers()
-		local total = PlayerRegistry:GetAllPlayers()
 
+		-- Only normal mode on the last 1v1
+		if #alive == 2 then return PTB.Modes.Normal end
+
+		local total = PlayerRegistry:GetAllPlayers()
 		local perc = #alive / #total
 
 		-- Don't run the same mode two times in a row
@@ -111,6 +102,7 @@ function PTB:PickMode()
 		repeat
 			newMode = PTB.Modes[ PTB.ModeNames[ math.random( #PTB.ModeNames ) ] ]
 		until newMode ~= PTB.LastMode and perc >= ( newMode.Min or 0 )
+
 		print( "Old mode: " .. PTB.LastMode.Name .. ", New mode: " .. newMode.Name )
 
 		return newMode
@@ -123,7 +115,7 @@ function PTB:BeginRound( skip_time )
 	PTB.CurMode:Init()
 
 	if not skip_time then
-		PTB.Bomb:Drop()
+		--PTB.Bomb:Drop()
 
 		Say( nil, PTB.CurMode.Name .. " mode in " .. PTB.NewRoundTime .. " seconds", false )
 	end
@@ -159,8 +151,8 @@ function PTB:EndRound()
 		Say( nil, alive[ 1 ].Name .. " survived this one, next match in " .. PTB.NewMatchTime .. " seconds", false )
 		alive[ 1 ].Score = alive[ 1 ].Score + 1
 
-		if alive[ 1 ].Score >= 10 then
-			Say( nil, alive[ 1 ].Name .. " has proven to be a cockroach by surviving ten matches!", false )
+		if alive[ 1 ].Score >= PTB.RoundLimit then
+			Say( nil, alive[ 1 ].Name .. " has proven to be a cockroach by surviving " .. PTB.RoundLimit .. " matches!", false )
 			GameRules:SetGameWinner( alive[ 1 ].Team )
 		end
 	elseif #alive == 0 then
@@ -170,18 +162,13 @@ function PTB:EndRound()
 
 	if #alive <= 1 then
 		Timers:CreateTimer( ( PTB.NewMatchTime - PTB.NewRoundTime ), function() 
-			--GameRules:SetHeroRespawnEnabled( true )
-
 			for _,p in pairs( PlayerRegistry:GetDeadPlayers( { Connected = true } ) ) do
 				if p.State == Player.STATE_CONNECTED then
 					p.HeroEntity:RespawnHero( false, false, false )
-					--p.HeroEntity:RespawnUnit()
 				end
 			end
 
-			--GameRules:SetHeroRespawnEnabled( false )
-
-			--GameRules:SetFirstBloodActive( false )
+			--PTB.Bomb:Drop()
 			PTB:BeginRound()
 		end )
 	else
@@ -219,13 +206,20 @@ end
 
 function PTB:EventGainLevel( event )
 	print( "PTB:EventGainLevel" )
-	PrintTable( event )
+	-- PrintTable( event )
 
+	for _, p in pairs( PlayerRegistry:GetAllPlayers() ) do
+		p:OnGainedLevel( event )
+	end
+
+	-- FIXME: Why does this not always work?
+	--[[
 	local player = PlayerRegistry:GetPlayer( {
 		UserID = PlayerResource:GetPlayer( event.player - 1 ):GetPlayerID()
 	} )
 
 	if player then player:OnGainedLevel( event ) end
+	]]
 end
 
 function PTB:EventItemPickup( event )
@@ -241,7 +235,7 @@ end
 
 function PTB:EventNPCSpawned( event )
 	print( "PTB::EventNPCSpawned" )
-	PrintTable( event )
+	-- PrintTable( event )
 
 	local npc = EntIndexToHScript( event.entindex )
 
@@ -261,7 +255,7 @@ end
 
 function PTB:EventPlayerConnected( event )
 	print( "PTB:EventPlayerConnected" )
-	PrintTable( event )
+	-- PrintTable( event )
 
 	local player = PlayerRegistry:GetPlayer( {
 		UserID = event.userid - 1
@@ -273,7 +267,7 @@ end
 local playerCount = 0
 function PTB:EventPlayerJoined( event )
 	print( "PTB:EventPlayerJoined" )
-	PrintTable( event )
+	-- PrintTable( event )
 
 	playerCount	= playerCount + 1
 
@@ -282,11 +276,7 @@ function PTB:EventPlayerJoined( event )
 
 	print( "Player #" .. id .. " connected." )
 
-	--if PTB.TESTING then
-	--	ply:SetTeam( DOTA_TEAM_GOODGUYS )
-	--else
-		ply:SetTeam( Teams.TeamIDs[ id ] )
-	--end
+	ply:SetTeam( Teams.TeamIDs[ id ] )
 
 	PrecacheUnitByNameAsync( 'npc_dota_hero_techies', function() print( 'Techies precached!' ) end )
 
@@ -309,7 +299,7 @@ end
 
 function PTB:EventPlayerDisconnected( event )
 	print( "PTB:EventPlayerDisconnected" )
-	PrintTable( event )
+	-- PrintTable( event )
 
 	local player = PlayerRegistry:GetPlayer( {
 		UserID = event.userid - 1
@@ -320,7 +310,7 @@ end
 
 function PTB:EventPlayerJoinedTeam( event )
 	print( "PTB:EventPlayerJoinedTeam" )
-	PrintTable( event )
+	-- PrintTable( event )
 
 	local player = PlayerRegistry:GetPlayer( {
 		UserID = event.userid - 1

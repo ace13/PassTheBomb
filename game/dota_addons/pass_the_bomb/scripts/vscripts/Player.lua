@@ -63,8 +63,10 @@ function Player:_InitTeam()
 end
 
 function Player:_ResetHero()
+	self.HeroEntity:SetTeam( self.Team )
 	self.HeroEntity:SetAbilityPoints( 0 )
 	self.HeroEntity:SetAngles( 0, math.random(360), 0 )
+
 	if self.BaseMove then self.HeroEntity:SetBaseMoveSpeed( self.BaseMove ) end
 	if self.BaseDayVision then self.HeroEntity:SetDayTimeVisionRange( self.BaseDayVision ) end
 	if self.BaseNightVision then self.HeroEntity:SetNightTimeVisionRange( self.BaseNightVision ) end
@@ -296,7 +298,7 @@ function Player:OnDisconnected( event )
 end
 
 function Player:OnGainedLevel( event )
-	print( self.Name .. " gains a level!" )
+	-- print( self.Name .. " gains a level!" )
 
 	if IsValidEntity( self.HeroEntity ) then
 		self.HeroEntity:SetAbilityPoints( 0 )

@@ -56,7 +56,10 @@ function Bomb:OnTick()
 
 		return
 	else
-		Say(nil, "Time left: " .. math.ceil( timeLeft ), false)
+		local nicetime = math.ceil( timeLeft )
+		if nicetime == 10 or nicetime == 5 or nicetime <= 3 then
+			Say(nil, "T-" .. nicetime .. " seconds", false)
+		end
 
 		return 1
 	end

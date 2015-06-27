@@ -1,8 +1,17 @@
-// Units File
 "DOTAUnits"
 {
 	"Version"	"1"
 	
+	"ptb_huge_tree"
+	{
+		"BaseClass"  "npc_dota_creature"
+		"Model"      "models/props_tree/tree_pine_02.vmdl"
+		"ModelScale" "10"
+
+		"BoundsHullName"       "DOTA_HULL_SIZE_SMALL"
+		"MovementCapabilities" "DOTA_UNIT_CAP_MOVE_NONE"
+	}
+
 	//=================================================================================	
 	// Creature: Gnoll Assassin
 	//=================================================================================

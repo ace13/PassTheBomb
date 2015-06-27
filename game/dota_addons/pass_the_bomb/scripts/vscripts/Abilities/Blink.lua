@@ -18,6 +18,4 @@ function Blink(keys)
 
 	FindClearSpaceForUnit( caster, point, true )
 	ProjectileManager:ProjectileDodge( caster )
-
-
 end

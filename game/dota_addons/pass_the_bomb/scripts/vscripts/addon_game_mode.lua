@@ -10,6 +10,8 @@ function Precache( context )
 	-- PrecacheResource( "particle", "*.vpcf", context )
 
 	PrecacheUnitByNameSync( "npc_dota_hero_techies", context )
+	PrecacheResource( "particle", "particles/units/heroes/hero_bounty_hunter/bounty_hunter_track_trail.vpcf", context )
+	PrecacheResource( "particle", "particles/units/heroes/hero_bounty_hunter/bounty_hunter_track_shield.vpcf", context )
 	--PrecacheResource( "model", "models/heroes/techies/fx_techies_remotebomb.vmdl", context )
 end
 
