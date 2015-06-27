@@ -101,11 +101,16 @@ function PTB:PickMode()
 	if not PTB.LastMode then
 		return PTB.Modes.Normal -- Always start on normal mode
 	else
+		local alive = PlayerRegistry:GetAlivePlayers()
+		local total = PlayerRegistry:GetAllPlayers()
+
+		local perc = #alive / #total
+
 		-- Don't run the same mode two times in a row
 		local newMode = PTB.LastMode
 		repeat
 			newMode = PTB.Modes[ PTB.ModeNames[ math.random( #PTB.ModeNames ) ] ]
-		until newMode ~= PTB.LastMode
+		until newMode ~= PTB.LastMode and perc >= ( newMode.Min or 0 )
 		print( "Old mode: " .. PTB.LastMode.Name .. ", New mode: " .. newMode.Name )
 
 		return newMode
@@ -209,7 +214,7 @@ end
 
 function PTB:EventBombPassed( event )
 	print( "PTB:EventBombPassed" )
-	PrintTable( event )
+	-- PrintTable( event )
 end
 
 function PTB:EventGainLevel( event )
@@ -217,7 +222,7 @@ function PTB:EventGainLevel( event )
 	PrintTable( event )
 
 	local player = PlayerRegistry:GetPlayer( {
-		UserID = event.player - 1
+		UserID = PlayerResource:GetPlayer( event.player - 1 ):GetPlayerID()
 	} )
 
 	if player then player:OnGainedLevel( event ) end
@@ -225,7 +230,7 @@ end
 
 function PTB:EventItemPickup( event )
 	print( "PTB:EventItemPickup" )
-	PrintTable( event )
+	-- PrintTable( event )
 
 	local player = PlayerRegistry:GetPlayer( {
 		UserID = event.PlayerID
@@ -355,85 +360,31 @@ function PTB:EventStateChanged( event )
 				end
 				return 1
 		end )
-		--[[
-		local i = 0
-		Timers:CreateTimer( 2, function()
-			if i < PlayerResource:GetPlayerCount() then
-				local ply = PlayerResource:GetPlayer( i )
-				print( i .. ": " .. tostring( ply ) .. " (" .. ( IsValidEntity( ply ) and "is valid" or "is not valid" ) .. ")" )
-
-				local hero = CreateHeroForPlayer( "npc_dota_hero_techies", ply )
-				hero:SetControllableByPlayer( i, true )
-				hero:SetPlayerID( i )
-
-				i = i + 1
-				return 2
-			else
-				return
-			end
-		end)
-		--]]
 	elseif state == DOTA_GAMERULES_STATE_PRE_GAME then
 		print( "  State: PRE_GAME" )
 
 		Timers:CreateTimer( function()
-			print( "Tick" )
 			for i = 0, PlayerResource:GetPlayerCount() - 1 do
 				local ply = PlayerResource:GetPlayer( i )
 				if IsValidEntity( ply ) and
-				   not IsValidEntity( ply:GetAssignedHero() ) then
-					print( i .. " is not valid " )
+				   not ply.Player then
+					print( i .. " doesn't have a hero yet, waiting" )
 					return 0.5
 				end
 			end
 
+			print( "All players have heroes, reassigning teams." ) 
+
 			Teams:Init()
 			CustomGameEventManager:Send_ServerToAllClients( "ptb_teams_changed", { } )
 
-			for i = 0, PlayerResource:GetPlayerCount() - 1 do
-				local ply = PlayerResource:GetPlayer( i )
+			for _, ply in pairs( PlayerRegistry:GetAllPlayers() ) do
+				ply:SetTeam( Teams.TeamIDs[ ply.ID ] )
 
-				if IsValidEntity( ply ) then
-					local hero = ply:GetAssignedHero()
-					ply:SetTeam( Teams.TeamIDs[ i + 1 ] )
-					hero:RespawnHero( false, true, false )	
-				end
+				ply.HeroEntity:RespawnHero( false, true, false )
 			end
 		end )
-		--[[
-		if Convars:GetInt( "sv_cheats" ) == 1 then
-			Timers:CreateTimer(4, function()
-				if PTB.Type == PTB.TYPE_FFA then
-					Teams:Init()
-					CustomGameEventManager:Send_ServerToAllClients( "teams_changed", { } )
 
-					for _, p in pairs( PlayerRegistry:GetAllPlayers() ) do
-						p:SetTeam( Teams.TeamIDs[ p.ID ] )
-					end
-				end
-			end )
-		end
-		--]]
-		--[[
-		local i = 0
-		Timers:CreateTimer(4, function()
-			if i < PlayerResource:GetPlayerCount() then
-				local ply = PlayerResource:GetPlayer( i )
-				print( i .. ": " .. tostring( ply ) .. " (" .. ( IsValidEntity( ply ) and "is valid" or "is not valid" ) .. ")" )
-
-				if IsValidEntity( ply:GetAssignedHero() ) then
-					print( "> Has hero" )
-				else
-					local hero = CreateHeroForPlayer( "npc_dota_hero_techies", ply )
-				end
-
-				i = i + 1
-				return 2
-			else
-				return
-			end
-		end )
-		--]]
 		Say( nil, "First round starts in 30 seconds, get ready.", false )
 	elseif state == DOTA_GAMERULES_STATE_GAME_IN_PROGRESS then
 		print( "  State: GAME_IN_PROGRESS" )

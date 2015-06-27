@@ -17,16 +17,7 @@ end
 function Activate()
 	print( "Pass The Bomb running, here there be dragons" )
 
-	--Teams:Init()
 	PTB:Init()
-
-	Convars:RegisterCommand( "ptb_next", function(...)
-		PTB:BeginRound()
-	end, "Next round", 0 )
-
-	Convars:RegisterCommand( "ptb_test", function(...)
-		PlayerRegistry:GetPlayer().Score = 10
-	end, "Test, go", 0 )
 
 	Convars:RegisterCommand( "ptb_fast", function(...)
 		PTB.RoundTime = 5
@@ -34,7 +25,7 @@ function Activate()
 		PTB.NewMatchTime = 10
 		GameRules:SetPreGameTime( 10 )
 
-		Say( nil, "Fast rounds enabled, prepare to APM", false )
+		Say( nil, "Fast rounds enabled, prepare your bodies", false )
 	end, "Faster rounds", 0 )
 
 	Convars:RegisterCommand( "ptb_sanic", function(...)
@@ -43,6 +34,7 @@ function Activate()
 		PTB.NewMatchTime = 5
 		GameRules:SetPreGameTime( 5 )
 
-		Say( nil, "Sanic mode: ACTIVE! (May god have mercy on your souls)", false )
+		Say( nil, "Sanic mode: ACTIVE!", false )
+		Say( nil, "May god have mercy on your souls", false )
 	end, "Gotta go fast", 0 )
 end

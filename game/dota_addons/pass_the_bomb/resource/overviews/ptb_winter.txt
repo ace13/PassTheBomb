@@ -1,0 +1,8 @@
+ptb_winter
+{
+	material materials/overviews/ptb_winter.vmat
+	pos_x -2816
+	pos_y 2560
+	scale 5.250
+}
+

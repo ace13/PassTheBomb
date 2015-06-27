@@ -1,5 +1,6 @@
 local Mode = {}
 Mode.Name = "Darkest of Nights"
+Mode.Min = 0.5
 
 function Mode:Init()
 	print( "SuperNight:Init" )
@@ -10,7 +11,7 @@ end
 
 function Mode:Start()
 	for _, p in pairs( PlayerRegistry:GetAllPlayers() ) do
-		p:SetVisionMod( 0.5, VISION_NIGHT )
+		p:SetVisionMod( 0.6, VISION_NIGHT )
 	end
 end
 
@@ -30,11 +31,11 @@ function Mode:BombPassed( event )
 
 	if from then
 		from:SetSpeed( from:GetBaseSpeed() )
-		from:SetVisionMod( 0.5, VISION_NIGHT )
+		from:SetVisionMod( 0.6, VISION_NIGHT )
 	end
 
 	to:SetSpeed( 2048 )
-	to:SetVisionMod( 0.3, VISION_NIGHT )
+	to:SetVisionMod( 0.5, VISION_NIGHT )
 end
 
 return Mode

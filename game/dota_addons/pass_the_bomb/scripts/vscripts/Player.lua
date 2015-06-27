@@ -62,6 +62,14 @@ function Player:_InitTeam()
 	self:SetTeam( teamid )
 end
 
+function Player:_ResetHero()
+	self.HeroEntity:SetAbilityPoints( 0 )
+	self.HeroEntity:SetAngles( 0, math.random(360), 0 )
+	if self.BaseMove then self.HeroEntity:SetBaseMoveSpeed( self.BaseMove ) end
+	if self.BaseDayVision then self.HeroEntity:SetDayTimeVisionRange( self.BaseDayVision ) end
+	if self.BaseNightVision then self.HeroEntity:SetNightTimeVisionRange( self.BaseNightVision ) end
+end
+
 
 --[[
 --   Helper functions
@@ -78,6 +86,10 @@ function Player:GetTeam()
 end
 
 function Player:SetTeam( teamID )
+	print( "Player:SetTeam" )
+	PrintTable( self )
+	print( "Set team to " .. teamID )
+
 	PlayerResource:SetCustomTeamAssignment( self.UserID, teamID )
 	self.Team = PlayerResource:GetCustomTeamAssignment( self.UserID )
 
@@ -93,7 +105,6 @@ function Player:SetTeam( teamID )
 
 	if IsValidEntity( self.HeroEntity ) then
 		self.HeroEntity:SetTeam( self.Team )
-		self.HeroEntity:SetPlayerID( self.UserID )
 	end
 end
 
@@ -333,8 +344,8 @@ function Player:OnSpawned( event )
 		print( self.Name .. " respawned!" )
 	end
 
+	self:_ResetHero()
 	self.Alive = true
-	self.HeroEntity:SetAngles( 0, math.random(360), 0 )
 
 	PrintTable( self )
 end

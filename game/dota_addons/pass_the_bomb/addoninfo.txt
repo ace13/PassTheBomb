@@ -1,9 +1,13 @@
 "AddonInfo"
 {
-	maps         "ptb_summer"
+	maps         "ptb_summer ptb_winter"
 	"IsPlayable" "1"
 	"TeamCount" "10"
 	"ptb_summer"
+	{
+		"MaxPlayers" "10"
+	}
+	"ptb_winter"
 	{
 		"MaxPlayers" "10"
 	}
