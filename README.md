@@ -21,6 +21,7 @@ Implemented gamemodes:
 - Super Toss - Daytime, standard blink and longer bomb tosses.
 - Super Blink - Daytime, upgraded blink and normal bomb tossing.
 - Forest - Daytime, spawns random trees during its duration, only blink on the bomb carrier.
+  - Needs a way to prevent trees from spawning inside players, should be possible though since Dota 2's Sprout ability doesn't have the issue
 
 TODO
 ====
@@ -30,6 +31,8 @@ TODO
 - Only provide vision on some modes
 - Put a minimap notice on the bomb carrier
 - Localize all the strings
+- Taunts or the like, speechbubbles with smileys might be enough
+- A way to select round lengths and win condition, maybe a way to ban modes
 - More gamemodes: (These are only ideas)
   - Rooted mode, no movement except for blink
   - Incognito mode, no countdown or effect for carrying the bomb
@@ -40,3 +43,11 @@ TODO
   - Skillshot mode, pass the bomb with mirana arrow / sunstrike / other
   - Drunken mode, camera sways wildly during the round
   - Multibomb mode, two or more bombs in play at the same time, will need a lot of code work though
+  - Rocket mode, bomb is a gyrocopter homing missile
+  - Magnetic mode, bomb is point targeted and seeks towards closest player
+  - Bouncing betty mode, bomb spawns in the middle and seeks towards players - speeding up over time, blowing up the first one it touches
+  - Swap mode, Nether Swap instead of blink
+  - Hook mode, Clockwork Hookshot instead of blink
+  - Ghost mode, the bomb carrier is invisible but leaves footprints
+  - David and Goliath mode, everybody but the bomb carrier is small, the bomb carrier is huge, no blink
+  - Emergency blink mode, blink is not targetable, blinks in a random direction
