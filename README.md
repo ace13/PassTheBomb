@@ -6,11 +6,13 @@ Hopefully this time there won't be an SC2 Arcade update that completely breaks l
 
 Note that the level is currently **very** alpha, don't expect everything to work.
 
+Feel free to report issues and suggestions.
+
 Current Status
 ==============
 
 Playable, though with limited gamemodes and settings.
-`ptb_fast` in the console will switch to shorter rounds (Don't use `ptb_sanic`, it's only for testing)
+`ptb_fast` in the console will switch to shorter rounds.
 
 Implemented gamemodes:
 - Normal - Daytime, standard blink and bomb tossing.
@@ -32,7 +34,9 @@ TODO
   - Rooted mode, no movement except for blink
   - Incognito mode, no countdown or effect for carrying the bomb
   - Huge tree mode, huge trees covering the playing field, hidden healthbars
-  - Barred mode, movement blockers covering the playing field, no vision blocking though
+  - Barred mode, movement blocking rocks/other covering the playing field, no vision blocking though
   - Heavyweight mode, bomb tossing ministuns
-  - Skillshot mode, can have submodes for all the different skillshots
-  - Drunken mode, camera shakes wildly during the round
+  - Casket mode, bomb bounces between targets if in range
+  - Skillshot mode, pass the bomb with mirana arrow / sunstrike / other
+  - Drunken mode, camera sways wildly during the round
+  - Multibomb mode, two or more bombs in play at the same time, will need a lot of code work though
