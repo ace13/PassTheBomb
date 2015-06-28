@@ -40,6 +40,7 @@ function Mode:Cleanup()
 		p:SetAbilityLevel( "techies_blink", 1 )
 	end
 
+	-- FIXME: Find a proper world origin instead of just bomb_spawn
 	GridNav:DestroyTreesAroundPoint( Entities:FindByName( nil, "bomb_spawn" ):GetAbsOrigin(), 2048, false )
 	GridNav:RegrowAllTrees()
 
@@ -57,14 +58,15 @@ function Mode:Cleanup()
 end
 
 function Mode:AddTree()
-	CreateTempTree(
-		Entities:FindByName( nil, "bomb_spawn" ):GetAbsOrigin() + Vector(
-			math.random(-1500, 1500),
-			math.random(-1500, 1500),
-			0
-		),
-		30
+	-- FIXME: Find a proper world origin instead of just bomb_spawn
+	local pos = Entities:FindByName( nil, "bomb_spawn" ):GetAbsOrigin() + Vector(
+		math.random(-1500, 1500),
+		math.random(-1500, 1500),
+		0
 	)
+
+	-- TODO: Mode heroes off of this position, so they don't get stuck in trees
+	CreateTempTree( pos, 30 )
 end
 
 function Mode:BombPassed( event )

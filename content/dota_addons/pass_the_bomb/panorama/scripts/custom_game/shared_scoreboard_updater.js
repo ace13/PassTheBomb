@@ -335,7 +335,16 @@ function _ScoreboardUpdater_UpdateAllTeamsAndPlayers( scoreboardConfig, teamsCon
 	var teamsList = [];
 	for ( var teamId of Game.GetAllTeamIDs() )
 	{
-		teamsList.push( Game.GetTeamDetails( teamId ) );
+		var team = Game.GetTeamDetails( teamId );
+
+		// Replace score value with the combined player level
+		team.team_score = 0;
+		for ( var player of Game.GetPlayerIDsOnTeam( teamId ) )
+		{
+			team.team_score += Players.GetLevel( player ) - 1;
+		}
+
+		teamsList.push( team );
 	}
 
 	// update/create team panels

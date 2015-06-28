@@ -66,6 +66,8 @@ function Player:_ResetHero()
 	self.HeroEntity:SetTeam( self.Team )
 	self.HeroEntity:SetAbilityPoints( 0 )
 	self.HeroEntity:SetAngles( 0, math.random(360), 0 )
+	self.HeroEntity:SetDeathXP( 0 )
+	self.HeroEntity:SetCustomDeathXP( 0 )
 
 	if self.BaseMove then self.HeroEntity:SetBaseMoveSpeed( self.BaseMove ) end
 	if self.BaseDayVision then self.HeroEntity:SetDayTimeVisionRange( self.BaseDayVision ) end

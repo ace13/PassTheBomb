@@ -11,8 +11,10 @@ Feel free to report issues and suggestions.
 Current Status
 ==============
 
-Playable, though with limited gamemodes and settings.
-`ptb_fast` in the console will switch to shorter rounds.
+Playable, though with limited gamemodes and settings. You can switch round times through console commands for now;
+- `ptb_normal` - 15 second rounds
+- `ptb_moderate` - 10 second rounds
+- `ptb_fast` - 5 second rounds
 
 Implemented gamemodes:
 - Normal - Daytime, standard blink and bomb tossing.
@@ -22,6 +24,7 @@ Implemented gamemodes:
 - Super Blink - Daytime, upgraded blink and normal bomb tossing.
 - Forest - Daytime, spawns random trees during its duration, only blink on the bomb carrier.
   - Needs a way to prevent trees from spawning inside players, should be possible though since Dota 2's Sprout ability doesn't have the issue
+- Casket - Daytime, standard blink and toss, but the bomb will bounce to any target in range when you get it
 
 TODO
 ====
@@ -39,7 +42,7 @@ TODO
   - Huge tree mode, huge trees covering the playing field, hidden healthbars
   - Barred mode, movement blocking rocks/other covering the playing field, no vision blocking though
   - Heavyweight mode, bomb tossing ministuns
-  - Casket mode, bomb bounces between targets if in range
+  - ~~Casket mode, bomb bounces between targets if in range~~
   - Skillshot mode, pass the bomb with mirana arrow / sunstrike / other
   - Drunken mode, camera sways wildly during the round
   - Multibomb mode, two or more bombs in play at the same time, will need a lot of code work though

@@ -1,3 +1,7 @@
+if not oldPrint then
+	oldPrint = print
+end
+
 function LoadModule( name )
 	local mod = nil
 	local st, err = pcall( function()
@@ -5,9 +9,9 @@ function LoadModule( name )
 		end )
 
 	if st then
-		print( "- " .. name .. "." )
+		oldPrint( "- " .. name .. " Loaded." )
 	else
-		print( "- " .. name .. " Failed!\n    " .. err )
+		oldPrint( "- " .. name .. " Failed!\n    " .. err )
 
 		mod = nil
 	end
@@ -35,7 +39,7 @@ function PrintTable( t, level, seen )
 	end
 	longest_key = longest_key + 1
 
-	print( braceIndent .. "{" )
+	oldPrint( braceIndent .. "{" )
 
 	table.sort( keys )
 	for _, k in ipairs( keys ) do
@@ -44,13 +48,13 @@ function PrintTable( t, level, seen )
 
 			if type( value ) == "table" then
 				if not seen[ value ] then
-					print( string.format( "%s(table ) %s:",
+					oldPrint( string.format( "%s( table  ) %s:",
 						indent,
 						tostring( k )
 					) )
 					PrintTable( value, level + 1, seen )
 				else
-					print( string.format( "%s(table ) %s: (seen as %s)",
+					oldPrint( string.format( "%s( table  ) %s: (seen as %s)",
 						indent,
 						tostring( k ),
 						tostring( value )
@@ -58,7 +62,7 @@ function PrintTable( t, level, seen )
 				end
 			elseif type( value ) == "userdata" then
 				if not seen[ value ] then
-					print( string.format( "%s(usrdat) %s: %s%q",
+					oldPrint( string.format( "%s(userdata) %s: %s%q",
 						indent,
 						tostring( k ),
 						string.rep( " ", longest_key - string.len( tostring( k ) ) ),
@@ -68,7 +72,7 @@ function PrintTable( t, level, seen )
 					
 					PrintTable( met and met._index or met, level + 1, seen )
 				else
-					print( string.format( "%s(usrdat) %s: %s%q (already seen)",
+					oldPrint( string.format( "%s(userdata) %s: %s%q (already seen)",
 						indent,
 						tostring( k ),
 						string.rep( " ", longest_key - string.len( tostring( k ) ) ),
@@ -78,18 +82,18 @@ function PrintTable( t, level, seen )
 
 				seen[ value ] = true
 			elseif t.FDesc and t.FDesc[ k ] then
-				print( string.format( "%s(%s) %s: %s%q (%s)",
+				oldPrint( string.format( "%s(%s) %s: %s%q (%s)",
 					indent,
-					string.sub( type( value ), 1, 6 ),
+					string.sub( type( value ), 1, 8 ),
 					tostring( k ),
 					string.rep( " ", longest_key - string.len( tostring( k ) ) ),
 					tostring( value ),
 					tostring( t.FDesc[ k ] ) )
 				)
 			else
-				print( string.format( "%s(%s) %s: %s%q",
+				oldPrint( string.format( "%s(%s) %s: %s%q",
 					indent,
-					string.sub( type( value ), 1, 6 ),
+					string.sub( type( value ), 1, 8 ),
 					tostring( k ),
 					string.rep( " ", longest_key -string.len( tostring( k ) ) ),
 					tostring( value )
@@ -98,5 +102,14 @@ function PrintTable( t, level, seen )
 		end
 	end
 
-	print( braceIndent .. "}" )
+	oldPrint( braceIndent .. "}" )
+end
+
+function print( ... )
+	local toPrint = ""
+	for _, v in pairs( { ... } ) do
+		toPrint = toPrint .. "\t" .. tostring( v )
+	end
+
+	oldPrint( "[" .. GetSystemTime() .. "] PTB =>" .. toPrint )
 end

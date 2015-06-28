@@ -81,7 +81,7 @@
 
 		"AbilityCastPoint"      "0.0"
 		"AbilityCastAnimation"  "ACT_DOTA_CAST_ABILITY_5"
-		"AbilityCastRange"      "700 2048"
+		"AbilityCastRange"      "%cast_range"
 		"AbilityCooldown"       "10000"
 
 		"precache"
@@ -95,11 +95,17 @@
 		{
 			"01"
 			{
+				"var_type"      "FIELD_INTEGER"
+				"cast_range"    "700 2048"
+			}
+
+			"02"
+			{
 				"var_type"      "FIELD_FLOAT"
 				"throw_speed"   "1000 2024"
 			}
 
-			"02"
+			"03"
 			{
 				"var_type"      "FIELD_FLOAT"
 				"vision_range"  "100"

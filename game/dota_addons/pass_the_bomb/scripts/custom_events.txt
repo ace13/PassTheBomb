@@ -28,5 +28,6 @@
 	{
 		"old_carrier" "short"
 		"new_carrier" "short"
+		"bomb" "short"
 	}
 }

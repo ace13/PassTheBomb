@@ -1,12 +1,25 @@
-Bomb = class({
-	constructor = function(self)
-		self:Init()
-	end
-})
+if not Bomb then
+	Bomb = class({
+		constructor = function(self)
+			self:Init()
+		end
+	})
+	Bombs = {
+		Bomb = {}
+	}
+end
 
+function Bombs:Register( bomb )
+	Bombs[ #Bombs + 1 ] = bomb
+	bomb.ID = #Bombs
+end
+function Bombs:Find( id )
+	return Bombs[ id ]
+end
 
 function Bomb:Init()
 	self:_Reset()
+	Bombs:Register( self )
 end
 
 function Bomb:Drop()
@@ -73,15 +86,12 @@ function Bomb:Take( skip )
 
 	if IsValidEntity( self.Item ) then
 		if IsValidEntity( self.Item:GetContainer() ) then
-			print( "Killing container" )
-			self.Item:GetContainer():Kill()
+			self.Item:GetContainer():Kill() -- Remove dropped bomb
 		end
 
 		if IsValidEntity( self.Item:GetOwner() ) then
 			local owner = self.Item:GetOwner()
-
-			print( "Taking from owner" )
-			owner.Player:RemoveItem( self.Item )
+			owner.Player:RemoveItem( self.Item ) -- Take bomb item
 		end
 	end
 
@@ -112,7 +122,8 @@ function Bomb:Pass( player, from )
 
 		FireGameEvent( "ptb_bomb_passed", {
 			old_carrier = self.LastCarrier and self.LastCarrier.UserID or -1,
-			new_carrier = self.Carrier.UserID
+			new_carrier = self.Carrier.UserID,
+			bomb = self.ID
 		} )
 
 		print( self.Carrier.Name .. " got a bomb." )
