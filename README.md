@@ -23,8 +23,9 @@ Implemented gamemodes:
 - Super Toss - Daytime, standard blink and longer bomb tosses.
 - Super Blink - Daytime, upgraded blink and normal bomb tossing.
 - Forest - Daytime, spawns random trees during its duration, only blink on the bomb carrier.
-  - Needs a way to prevent trees from spawning inside players, should be possible though since Dota 2's Sprout ability doesn't have the issue
 - Casket - Daytime, standard blink and toss, but the bomb will bounce to any target in range when you get it
+  - Has a super casket mode with upgraded toss too
+- Rooted - Daytime, standard blink and toss, no normal movement
 
 TODO
 ====
@@ -36,8 +37,14 @@ TODO
 - Localize all the strings
 - Taunts or the like, speechbubbles with smileys might be enough
 - A way to select round lengths and win condition, maybe a way to ban modes
+- Announcer voice - UT/Quake
+- Countdown music, nothing loud and obnoxious though
+- Proper loading screen and overview image.
 - More gamemodes: (These are only ideas)
-  - Rooted mode, no movement except for blink
+  - ~~Forest mode~~
+    - Needs a way to prevent trees from spawning inside players, should be possible since Dota 2's Sprout ability doesn't have the issue
+  - ~~Rooted mode, no movement except for blink~~
+    - Still needs to get the overgrowth root particles in, they're refusing to work for me...
   - Incognito mode, no countdown or effect for carrying the bomb
   - Huge tree mode, huge trees covering the playing field, hidden healthbars
   - Barred mode, movement blocking rocks/other covering the playing field, no vision blocking though
