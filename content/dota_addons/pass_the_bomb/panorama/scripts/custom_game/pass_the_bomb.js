@@ -19,3 +19,4 @@ GameUI.CustomUIConfig().team_colors[DOTATeam_t.DOTA_TEAM_CUSTOM_5] = "#92A440;";
 GameUI.CustomUIConfig().team_colors[DOTATeam_t.DOTA_TEAM_CUSTOM_6] = "#5CC5E0;"; // (92, 197, 224)  - Player 8
 GameUI.CustomUIConfig().team_colors[DOTATeam_t.DOTA_TEAM_CUSTOM_7] = "#00771F;"; // (0, 119, 31)    - Player 9
 GameUI.CustomUIConfig().team_colors[DOTATeam_t.DOTA_TEAM_CUSTOM_8] = "#956000;"; // (149, 96, 0)    - Player 10
+

@@ -7,12 +7,18 @@ function Mode:Init()
 	GameRules:SetTimeOfDay( 0.76 )
 
 	self.Listener = ListenToGameEvent( "ptb_bomb_passed", Dynamic_Wrap( self, 'BombPassed' ), self )
+
+	if RollPercentage( 25 ) then
+		self.Name = "Dankest of Nights"
+	else
+		self.Name = "Darkest of Nights"
+	end
 end
 
 function Mode:Start()
 	for _, p in pairs( PlayerRegistry:GetAllPlayers() ) do
 		p:SetVisionMod( 0.6, VISION_NIGHT )
-		p:SetAbilityLevel( "techies_blink", 0 )
+		p:SetAbilityLevel( "techies_blink", 1 )
 	end
 end
 
@@ -23,13 +29,7 @@ function Mode:Cleanup()
 
 	for _, p in pairs( PlayerRegistry:GetAllPlayers() ) do
 		p:SetVisionMod( 1, VISION_NIGHT )
-		p:SetAbilityLevel( "techies_blink", 1 )
-	end
-
-	if RollPercentage( 50 ) then
-		self.Name = "Dankest of Nights"
-	else
-		self.Name = "Darkest of Nights"
+		p:SetAbilityLevel( "techies_blink", 2 )
 	end
 end
 
@@ -39,13 +39,17 @@ function Mode:BombPassed( event )
 
 	if from then
 		from:SetSpeed( from:GetBaseSpeed() )
-		from:SetVisionMod( 0.6, VISION_NIGHT )
-		from:SetAbilityLevel( "techies_blink", 0 )
+		from:SetVisionMod( 0.6 )
+		from:SetAbilityLevel( "techies_blink", 1 )
 	end
 
 	to:SetSpeed( 2048 )
-	to:SetVisionMod( 0.5, VISION_NIGHT )
-	to:SetAbilityLevel( "techies_blink", 1 )
+	to:SetVisionMod( 0.3 )
+	to:SetAbilityLevel( "techies_blink", 2 )
+
+	Timers:CreateTimer( 0.5, function() 
+		to:SetVisionMod( 0.5, VISION_NIGHT )
+	end )
 end
 
 return Mode

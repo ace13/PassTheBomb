@@ -18,6 +18,9 @@ function Precache( context )
 
 	PrecacheResource( "particle", "particles/units/heroes/hero_bounty_hunter/bounty_hunter_track_trail.vpcf", context )
 	PrecacheResource( "particle", "particles/units/heroes/hero_bounty_hunter/bounty_hunter_track_shield.vpcf", context )
+
+	PrecacheResource( "soundfile", "soundevents/game_sounds_heroes/game_sounds_treant.vsndevts", context )
+	PrecacheResource( "particle_folder",  "particles/units/heroes/hero_treant", context )
 end
 
 -- Create the game mode when we activate

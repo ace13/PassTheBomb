@@ -41,8 +41,8 @@ function PTB:Init()
 		"Normal",
 
 		"Blink", "Casket", "Forest",
-		"Night", "Speed", "SuperNight",
-		"Toss"
+		"Night", "Rooted", "Speed",
+		"SuperNight", "Toss"
 	}
 	PTB.Players = { }
 	PTB.State = PTB.STATE_PREROUND
@@ -96,7 +96,6 @@ function PTB:Init()
 	GameRules:SetCustomGameTeamMaxPlayers( DOTA_TEAM_GOODGUYS, 10 )
 	GameRules:SetCustomGameTeamMaxPlayers( DOTA_TEAM_BADGUYS, 0 )
 	GameRules:SetCustomVictoryMessage( "Boom! Hahahaha" )
-	--GameRules:SetHideKillMessageHeaders( true ) -- What does this even do?
 
 	GameRules:SetGoldPerTick( 0 )
 	GameRules:SetHeroRespawnEnabled( false )

@@ -42,7 +42,7 @@ function Player:_InitHero( entity )
 	self.HeroEntity:SetAbilityPoints( 0 )
 	self.HeroEntity:SetGold( 0, false )
 
-	self:SetAbilityLevel( "techies_blink", 1 )
+	self:SetAbilityLevel( "techies_blink", 2 )
 end
 
 function Player:_InitPlayer()
@@ -68,6 +68,7 @@ function Player:_ResetHero()
 	self.HeroEntity:SetAngles( 0, math.random(360), 0 )
 	self.HeroEntity:SetDeathXP( 0 )
 	self.HeroEntity:SetCustomDeathXP( 0 )
+	self.HeroEntity:SetMoveCapability( DOTA_UNIT_CAP_MOVE_GROUND )
 
 	if self.BaseMove then self.HeroEntity:SetBaseMoveSpeed( self.BaseMove ) end
 	if self.BaseDayVision then self.HeroEntity:SetDayTimeVisionRange( self.BaseDayVision ) end
@@ -229,13 +230,17 @@ function Player:HasItem( item )
 end
 
 function Player:RemoveItem( item )
-	if not IsValidEntity( self.HeroEntity ) or not IsValidEntity( item ) then return end
+	if not IsValidEntity( self.HeroEntity ) then return end
+	if type( item ) == "string" then item = self:GetItem( item ) end
 
-	if item:GetAbilityName() == "item_bomb" then
-		self:SetAbilityLevel( "techies_pass_the_bomb", 0 )
-	end
+	if not IsValidEntity( item ) then return end
+	local name = item:GetAbilityName()
 
 	self.HeroEntity:RemoveItem( item )
+
+	if name == "item_bomb" and not self:HasItem( "item_bomb" ) then
+		self:SetAbilityLevel( "techies_pass_the_bomb", 0 )
+	end
 end
 
 -- Abilities

@@ -6,6 +6,14 @@ function Mode:Init()
 
 	GameRules:SetTimeOfDay( 0.26 )
 	self.Listener = ListenToGameEvent( "ptb_bomb_passed", Dynamic_Wrap( self, 'BombPassed' ), self )
+
+	if RollPercentage( 50 ) then
+		self.SuperToss = true
+		self.Name = "Look At It Go"
+	else
+		self.SuperToss = false
+		self.Name = "Casket"
+	end
 end
 
 function Mode:Start()
@@ -23,6 +31,11 @@ function Mode:BombPassed( event )
 	local to = PlayerRegistry:GetPlayer( { UserID = event.new_carrier } )
 
 	local ability = to:GetAbility( "techies_pass_the_bomb" )
+
+	if self.SuperToss then
+		ability:SetLevel( 2 )
+	end
+
 	local pos = to.HeroEntity:GetAbsOrigin()
 	local range = ability:GetLevelSpecialValueFor( "cast_range", ability:GetLevel() - 1 )
 
@@ -38,7 +51,7 @@ function Mode:BombPassed( event )
 		false
 	)
 
-	if #units < 1 then return end
+	if not units or #units < 1 then return end
 
 	local target = units[ math.random( #units ) ]
 
@@ -56,8 +69,10 @@ function Mode:BombPassed( event )
 		iVisionTeamNumber = 0,
 		iSourceAttachment = DOTA_PROJECTILE_ATTACHMENT_ATTACK_2
 	}
-	to.HeroEntity:EmitSound( "Hero_Techies.RemoteMine.Toss" )
+
 	ProjectileManager:CreateTrackingProjectile( info )
+	to.HeroEntity:EmitSound( "Hero_Techies.RemoteMine.Toss" )
+	ability:StartCooldown( 10000 )
 end
 
 return Mode

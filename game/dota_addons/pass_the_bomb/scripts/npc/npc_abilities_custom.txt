@@ -16,9 +16,10 @@
 			"particle"      "particles/units/heroes/hero_antimage/antimage_blink_start.vpcf"
 		}
 
-		"AbilityCastPoint" "0.3"
-		"AbilityCooldown"  "6.0 3.0"
-		"MaxLevel"         "2"
+		"AbilityCastPoint" "0.15"
+		"AbilityCastRange" "%blink_range"
+		"AbilityCooldown"  "12.0 6.0 3.0"
+		"MaxLevel"         "3"
 		"RequiredLevel"    "0"
 		
 		"AbilitySpecial"
@@ -26,7 +27,7 @@
 			"01"
 			{
 				"var_type"    "FIELD_INTEGER"
-				"blink_range" "1000 2048"
+				"blink_range" "500 1000 2048"
 			}
 		}
 
@@ -146,7 +147,6 @@
 					"TARGET"       "attach_origin"
 					"TARGET"       "attach_origin"
 					"TARGET"       "attach_origin"
-					"TARGET"       "attach_origin" //CP3 has a child explosion origin
 				}
 			}
 
@@ -177,8 +177,9 @@
 
 		"precache"
 		{
-			"soundfile"		"soundevents/game_sounds_heroes/game_sounds_techies.vsndevts"		
-			"particle"		"particles/units/heroes/hero_techies/techies_suicide_base.vpcf"
+			"soundfile" "soundevents/game_sounds_heroes/game_sounds_techies.vsndevts"
+			"particle"  "particles/units/heroes/hero_techies/techies_suicide_base.vpcf"
+			"particle"  "particles/units/heroes/hero_lina/lina_spell_light_strike_array_explosion.vpcf"
 		}
 
 		"OnSpellStart"
@@ -202,6 +203,13 @@
 				"EffectAttachType"  "follow_origin"
 				"Target"            "CASTER"
 			}
+
+			"FireEffect"
+			{
+				"EffectName"        "particles/units/heroes/hero_lina/lina_spell_light_strike_array_explosion.vpcf"
+				"EffectAttachType"  "follow_origin"
+				"Target"            "CASTER"
+			}
 		}
 	}
 	"techies_invis2"
@@ -222,4 +230,5 @@
 		"AbilityBehavior"       "DOTA_ABILITY_BEHAVIOR_PASSIVE | DOTA_ABILITY_BEHAVIOR_NOT_LEARNABLE"
 		"MaxLevel"              "0"
 	}
+	
 }

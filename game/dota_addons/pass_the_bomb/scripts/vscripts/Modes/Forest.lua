@@ -18,6 +18,18 @@ function Mode:Init()
 
 		return 0.5
 	end )
+
+	local forests = {
+		"Forest of Dean", "Sherwood Forest", "Forestry",
+		"Can't see the forest for all the trees", "Timber",
+		"Watch out for that tree"
+	}
+
+	if RollPercentage( 75 ) then
+		self.Name = forests[ math.random( #forests ) ]
+	else
+		self.Name = "Forest"
+	end
 end
 
 function Mode:Start()
@@ -26,7 +38,7 @@ function Mode:Start()
 	self.Running = true
 
 	for _, p in pairs( PlayerRegistry:GetAllPlayers() ) do
-		p:SetAbilityLevel( "techies_blink", 0 )
+		p:SetAbilityLevel( "techies_blink", 1 )
 	end
 end
 
@@ -37,24 +49,12 @@ function Mode:Cleanup()
 	StopListeningToGameEvent( self.Listener )
 
 	for _, p in pairs( PlayerRegistry:GetAllPlayers() ) do
-		p:SetAbilityLevel( "techies_blink", 1 )
+		p:SetAbilityLevel( "techies_blink", 2 )
 	end
 
 	-- FIXME: Find a proper world origin instead of just bomb_spawn
 	GridNav:DestroyTreesAroundPoint( Entities:FindByName( nil, "bomb_spawn" ):GetAbsOrigin(), 2048, false )
 	GridNav:RegrowAllTrees()
-
-	local forests = {
-		"Forest of Dean", "Sherwood Forest", "Forestry",
-		"Can't see the forest for all the trees", "Timber",
-		"Watch out for that tree"
-	}
-
-	if RollPercentage( 90 ) then
-		self.Name = forests[ math.random( #forests ) ]
-	else
-		self.Name = "Forest"
-	end
 end
 
 function Mode:AddTree()
@@ -74,10 +74,10 @@ function Mode:BombPassed( event )
 	local to   = PlayerRegistry:GetPlayer( { UserID = event.new_carrier } )
 
 	if from then
-		from:SetAbilityLevel( "techies_blink", 0 )
+		from:SetAbilityLevel( "techies_blink", 1 )
 	end
 
-	to:SetAbilityLevel( "techies_blink", 2 )
+	to:SetAbilityLevel( "techies_blink", 3 )
 end
 
 return Mode
