@@ -70,9 +70,12 @@ function Bomb:OnTick()
 		return
 	else
 		local nicetime = math.ceil( timeLeft )
-		if nicetime == 10 or nicetime == 5 or nicetime <= 3 then
-			Say(nil, "T-" .. nicetime .. " seconds", false)
-		end
+
+		ShowPopup( {
+			Target = self.Carrier.HeroEntity,
+			Number = nicetime,
+			Color = Vector( 255, 0, 0 )
+		} )
 
 		return 1
 	end

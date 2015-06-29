@@ -30,7 +30,7 @@ Implemented gamemodes:
 TODO
 ====
 
-- Needs a nicer countdown
+- ~~Needs a nicer countdown~~
 - Actually toss a bomb, like a tiny toss
 - Only provide vision on some modes
 - Put a minimap notice on the bomb carrier

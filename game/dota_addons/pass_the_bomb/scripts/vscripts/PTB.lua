@@ -31,6 +31,7 @@ function PTB:Init()
 	LoadModule( "Bomb" )
 	LoadModule( "Player" )
 	LoadModule( "PlayerRegistry" )
+	LoadModule( "Popups" )
 	LoadModule( "Teams" )
 	LoadModule( "Timers" )
 

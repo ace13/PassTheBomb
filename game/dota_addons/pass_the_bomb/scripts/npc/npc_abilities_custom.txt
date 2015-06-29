@@ -16,7 +16,7 @@
 			"particle"      "particles/units/heroes/hero_antimage/antimage_blink_start.vpcf"
 		}
 
-		"AbilityCastPoint" "0.15"
+		"AbilityCastPoint" "0.2"
 		"AbilityCastRange" "%blink_range"
 		"AbilityCooldown"  "12.0 6.0 3.0"
 		"MaxLevel"         "3"
