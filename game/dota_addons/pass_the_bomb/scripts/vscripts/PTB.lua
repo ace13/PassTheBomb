@@ -9,7 +9,7 @@ PTB.STATE_POSTROUND = 3
 PTB.RoundLimit = 5
 PTB.RoundTime = 15
 PTB.NewRoundTime = 10
-PTB.NewMatchTime = 30
+PTB.NewMatchTime = 20
 
 PTB.AddedAI = false
 PTB.Testing = false
@@ -195,7 +195,7 @@ function PTB:EndRound()
 	local alive = PlayerRegistry:GetAlivePlayers()
 	if #alive == 1 then
 		local survivor = alive[ 1 ]
-		Say( nil, survivor.Name .. " survived this one, next match in " .. PTB.NewMatchTime .. " seconds", false )
+		Say( nil, survivor.Name .. " survived this one, next match in " .. math.floor( PTB.NewMatchTime ) .. " seconds", false )
 		survivor.Score = survivor.Score + 1
 		survivor.HeroEntity:HeroLevelUp( true )
 
@@ -207,13 +207,15 @@ function PTB:EndRound()
 		end
 	elseif #alive == 0 then
 		Say( nil, "You all died, that's pretty sad...", false )
-		Say( nil, "Next match in " .. PTB.NewMatchTime .. " seconds.", false )
+		Say( nil, "Next match in " .. math.floor( PTB.NewMatchTime ) .. " seconds.", false )
 	end
 
 	if #alive <= 1 then
-		Timers:CreateTimer( ( PTB.NewMatchTime - PTB.NewRoundTime ), function() 
+		local delay = PTB.NewMatchTime - PTB.NewRoundTime
+		if delay < 1 then delay = 1 end
+		Timers:CreateTimer( delay, function() 
 			for _,p in pairs( PlayerRegistry:GetDeadPlayers( { Connected = true } ) ) do
-				if p.State == Player.STATE_CONNECTED then
+				if p.Connected then
 					p.HeroEntity:RespawnHero( false, false, false )
 				end
 			end
