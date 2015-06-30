@@ -1,6 +1,6 @@
 if not Bomb then
-	Bomb = class({
-		constructor = function(self)
+	Bomb = class( {
+		constructor = function( self )
 			self:Init()
 		end
 	})
@@ -9,13 +9,23 @@ if not Bomb then
 	}
 end
 
+
+--[[
+--   Bomb registry, for multi-bomb modes
+--]]
 function Bombs:Register( bomb )
 	Bombs[ #Bombs + 1 ] = bomb
 	bomb.ID = #Bombs
 end
+
 function Bombs:Find( id )
 	return Bombs[ id ]
 end
+
+
+--[[
+--   Bomb functions
+--]]
 
 function Bomb:Init()
 	self:_Reset()
@@ -27,14 +37,6 @@ function Bomb:Drop()
 	CreateItemOnPositionSync( Entities:FindByName( nil, "bomb_spawn" ):GetAbsOrigin(), self.Item )
 end
 
-function Bomb:GetCarrier()
-	if IsValidEntity( self.Carrier ) then
-		return self.Carrier
-	else
-		return self.Item:GetContainer()
-	end
-end
-
 function Bomb:_Reset()
 	self.Carrier = nil
 	self.Item = CreateItem( "item_bomb", nil, nil )
@@ -43,7 +45,7 @@ function Bomb:_Reset()
 end
 
 function Bomb:StartCountdown()
-	if PTB.State ~= PTB.STATE_ROUND then return end
+	if PTB.State ~= STATE_ROUND then return end
 
 	self.ExplodePoint = GameRules:GetGameTime() + PTB.RoundTime
 	self.Countdown = true
@@ -92,6 +94,8 @@ function Bomb:Take( skip )
 			self.Item:GetContainer():Kill() -- Remove dropped bomb
 		end
 
+		-- Someone other than the carrier holds the bomb, shouldn't be possible.
+		-- But hey, better safe than sorry.
 		if IsValidEntity( self.Item:GetOwner() ) then
 			local owner = self.Item:GetOwner()
 			owner.Player:RemoveItem( self.Item ) -- Take bomb item
@@ -102,11 +106,14 @@ function Bomb:Take( skip )
 end
 
 function Bomb:Pass( player, from )
-	if IsValidEntity( player ) then
+	if player.Player then
+		-- Function was given a hero or player entity
+		-- So grab the player entry instead
 		player = player.Player
 	end
 
-	if (not from or from == self.Carrier) and player ~= self.Carrier then
+	if ( not from or from == self.Carrier ) -- Only allow passing if you actually own the bomb
+	     and player ~= self.Carrier then -- Don't care about passing to yourself for now
 		if self.Carrier then
 			local old = self.Carrier
 			old:RemoveItem( self.Item )

@@ -30,6 +30,8 @@ function PlayerRegistry:RegisterPlayer( player )
 end
 
 function PlayerRegistry:GetAlivePlayers( filter )
+	if not filter then return self:GetAllPlayers( { Alive = true } ) end
+
 	if type( filter ) == "function" then
 		return self:_ApplyFilter( {
 			Alive = true,
@@ -39,11 +41,13 @@ function PlayerRegistry:GetAlivePlayers( filter )
 		filter.Alive = true
 		return self:_ApplyFilter( filter )
 	else
-		return self:GetAllPlayers( { Alive = true } )
+		error( "Invalid filter for GetAlivePlayers" )
 	end
 end
 
 function PlayerRegistry:GetDeadPlayers( filter )
+	if not filter then return self:GetAllPlayers( { Alive = false } ) end
+
 	if type( filter ) == "function" then
 		return self:GetAllPlayers( {
 			Alive = false,
@@ -53,7 +57,7 @@ function PlayerRegistry:GetDeadPlayers( filter )
 		filter.Alive = false
 		return self:GetAllPlayers( filter )
 	else
-		return self:GetAllPlayers( { Alive = false } )
+		error( "Invalid filter for GetDeadPlayers" )
 	end
 end
 
@@ -87,6 +91,8 @@ function PlayerRegistry:_ApplyFilter( player, filter )
 	elseif type( filter ) == "table" then
 		if filter.Alive ~= nil     and player:IsAlive()  ~= filter.Alive     then return false end
 		if filter.Connected ~= nil and player.Connected  ~= filter.Connected then return false end
+		if filter.Dead ~= nil      and player:IsAlive()  == filter.Dead      then return false end
+		if filter.Disconnected ~= nil and player.Conntected == filter.Disconnected then return false end
 		if filter.Entity ~= nil    and player.PlayerEntity ~= filter.Entity  then return false end
 		if filter.Hero ~= nil      and player.HeroEntity ~= filter.Hero      then return false end
 		if filter.Name ~= nil      and player.Name       ~= filter.Name      then return false end

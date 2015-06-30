@@ -113,3 +113,20 @@ function print( ... )
 
 	oldPrint( "[" .. GetSystemTime() .. "] PTB =>" .. toPrint )
 end
+
+function SeedRandom( seed )
+	if not seed then
+		seed = 0
+
+		local time = GetSystemTime()
+		local size = 60 * 60
+
+		-- Add together the time data into a seconds count
+		for val in string.gmatch( time, "%d+" ) do
+			seed = seed + tonumber( val ) * size
+			size = size / 60
+		end
+	end
+
+	math.randomseed( tonumber( seed ) )
+end

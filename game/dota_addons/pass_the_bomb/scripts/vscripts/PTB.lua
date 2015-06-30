@@ -2,9 +2,13 @@ if not PTB then
 	PTB = { }
 end
 
-PTB.STATE_PREROUND  = 1
-PTB.STATE_ROUND     = 2
-PTB.STATE_POSTROUND = 3
+--[[
+--   Variables
+--]]
+
+STATE_PREROUND  = 1
+STATE_ROUND     = 2
+STATE_POSTROUND = 3
 
 PTB.RoundLimit = 5
 PTB.RoundTime = 15
@@ -14,6 +18,7 @@ PTB.NewMatchTime = 20
 PTB.AddedAI = false
 PTB.Testing = false
 PTB.HasFirstClient = false
+
 
 --[[
 --   Initialization
@@ -26,6 +31,7 @@ function PTB:Init()
 	end
 
 	print( "Initializing Pass The Bomb" )
+	SeedRandom()
 
 	print( "Loading modules:" )
 	LoadModule( "Bomb" )
@@ -46,16 +52,13 @@ function PTB:Init()
 		"SuperNight", "Toss"
 	}
 	PTB.Players = { }
-	PTB.State = PTB.STATE_PREROUND
-
-	local time_txt = string.gsub(string.gsub(GetSystemTime(), ':', ''), '0','')
-	math.randomseed(tonumber(time_txt))
+	PTB.State = STATE_PREROUND
 
 	print( "Adding game event listeners" )
 
 	ListenToGameEvent( 'dota_item_picked_up', Dynamic_Wrap( PTB, 'EventItemPickup' ),         PTB )
 	ListenToGameEvent( 'dota_player_gained_level', Dynamic_Wrap( PTB, 'EventGainLevel' ),     PTB )
-	ListenToGameEvent( 'entity_killed',       Dynamic_Wrap(PTB, 'EventEntityKilled'),         PTB )
+	ListenToGameEvent( 'entity_killed',       Dynamic_Wrap( PTB, 'EventEntityKilled' ),       PTB )
 	ListenToGameEvent( 'game_rules_state_change', Dynamic_Wrap( PTB, 'EventStateChanged' ),   PTB )
 	ListenToGameEvent( 'player_connect',      Dynamic_Wrap( PTB, 'EventPlayerConnected' ),    PTB )
 	ListenToGameEvent( 'player_connect_full', Dynamic_Wrap( PTB, 'EventPlayerJoined' ),       PTB )
@@ -66,8 +69,8 @@ function PTB:Init()
 	ListenToGameEvent( 'npc_spawned',         Dynamic_Wrap( PTB, 'EventNPCSpawned' ),         PTB )
 
 	PTB:AddStateHandler( DOTA_GAMERULES_STATE_HERO_SELECTION, function()
-		Timers:CreateTimer( 4, function()
-			if not PlayerResource:HaveAllPlayersJoined() then return 1 end
+		Timers:CreateTimer( 2, function()
+			if not PlayerResource:HaveAllPlayersJoined() then return 0.5 end
 
 			PTB:EventPlayersAllJoined()
 		end )
@@ -75,17 +78,15 @@ function PTB:Init()
 
 	PTB:AddStateHandler( DOTA_GAMERULES_STATE_PRE_GAME, function() 
 		Timers:CreateTimer( function()
+			-- Await all players to spawn
 			for i = 0, PlayerResource:GetPlayerCount() - 1 do
 				local ply = PlayerResource:GetPlayer( i )
-				if IsValidEntity( ply ) and
-				   not ply.Player then
-					print( i .. " doesn't have a hero yet, waiting" )
+				if not ply or not ply.Player then
 					return 0.5
 				end
 			end
 
-			print( "All players have heroes, reassigning teams." ) 
-
+			-- Reassign teams
 			PTB:_EnsureTeams()
 		end )
 	end )
@@ -94,6 +95,7 @@ function PTB:Init()
 		PTB:BeginRound( true )
 	end )
 
+	-- Game rules
 	GameRules:SetCustomGameTeamMaxPlayers( DOTA_TEAM_GOODGUYS, 10 )
 	GameRules:SetCustomGameTeamMaxPlayers( DOTA_TEAM_BADGUYS, 0 )
 	GameRules:SetCustomVictoryMessage( "Boom! Hahahaha" )
@@ -107,6 +109,7 @@ function PTB:Init()
 
 	-- Gamemode settings
 	local gamemode = GameRules:GetGameModeEntity()
+	-- TODO: Custom announcer? Use original one?
 	gamemode:SetAnnouncerDisabled( true )
 	gamemode:SetBuybackEnabled( false )
 	gamemode:SetCustomGameForceHero( "npc_dota_hero_techies" )
@@ -156,7 +159,7 @@ function PTB:PickMode()
 end
 
 function PTB:BeginRound( skip_time )
-	PTB.State = PTB.STATE_PREROUND
+	PTB.State = STATE_PREROUND
 	PTB.CurMode = PTB:PickMode()
 	PTB.CurMode:Init()
 
@@ -168,7 +171,7 @@ function PTB:BeginRound( skip_time )
 
 	Timers:CreateTimer( skip_time and 0 or PTB.NewRoundTime, function() 
 		PTB.Bomb:Take()
-		PTB.State = PTB.STATE_ROUND
+		PTB.State = STATE_ROUND
 
 		PTB.CurMode.StartTime = GameRules:GetGameTime()
 		PTB.CurMode:Start()
@@ -184,7 +187,7 @@ end
 function PTB:EndRound()
 	if not PTB.CurMode then return end
 
-	PTB.State = PTB.STATE_POSTROUND
+	PTB.State = STATE_POSTROUND
 	local mode = PTB.CurMode
 	PTB.CurMode = nil
 
@@ -195,7 +198,9 @@ function PTB:EndRound()
 	local alive = PlayerRegistry:GetAlivePlayers()
 	if #alive == 1 then
 		local survivor = alive[ 1 ]
-		Say( nil, survivor.Name .. " survived this one, next match in " .. math.floor( PTB.NewMatchTime ) .. " seconds", false )
+		Say( nil, survivor.Name .. " survived this round!" )
+		Say( nil, "New match starts in " .. math.floor( PTB.NewMatchTime ) .. " seconds.", false )
+
 		survivor.Score = survivor.Score + 1
 		survivor.HeroEntity:HeroLevelUp( true )
 
@@ -213,11 +218,10 @@ function PTB:EndRound()
 	if #alive <= 1 then
 		local delay = PTB.NewMatchTime - PTB.NewRoundTime
 		if delay < 1 then delay = 1 end
-		Timers:CreateTimer( delay, function() 
+		Timers:CreateTimer( delay, function()
+			-- Only respawn connected players
 			for _,p in pairs( PlayerRegistry:GetDeadPlayers( { Connected = true } ) ) do
-				if p.Connected then
-					p.HeroEntity:RespawnHero( false, false, false )
-				end
+				p.HeroEntity:RespawnHero( false, false, false )
 			end
 
 			PTB:BeginRound()
@@ -290,7 +294,7 @@ function PTB:TestingClients()
 
 	PTB.AddedAI = true
 
-	SendToServerConsole('dota_create_fake_clients')
+	SendToServerConsole( 'dota_create_fake_clients' )
 	Timers:CreateTimer( 1, function() 
 		for i = 0, PlayerResource:GetPlayerCount() - 1 do
 			if PlayerResource:IsFakeClient( i ) then
@@ -410,16 +414,9 @@ function PTB:EventPlayerJoined( event )
 	print( "PTB:EventPlayerJoined" )
 	-- PrintTable( event )
 
-	playerCount	= playerCount + 1
-
 	local ply = EntIndexToHScript( event.index + 1 )
-	local id = playerCount
-
-	print( "Player #" .. id .. " connected." )
 
 	ply:SetTeam( DOTA_TEAM_GOODGUYS )
-
-	--PrecacheUnitByNameAsync( 'npc_dota_hero_techies', function() print( 'Techies precached!' ) end )
 
 	PTB.HasFirstClient = true
 	PTB:TestingClients()
@@ -445,10 +442,9 @@ function PTB:EventPlayerJoinedTeam( event )
 	} )
 
 	if player then
-		print( "OnJoinedTeam" )
 		player:OnJoinedTeam( event )
 	else
-		print( "Priming name \"" .. event.name .. "\" for " .. (event.userid - 1) )
+		print( "Non-existing player, priming name \"" .. event.name .. "\" for " .. (event.userid - 1) )
 		PlayerRegistry:PrimeName( event.userid - 1, event.name )
 	end
 end

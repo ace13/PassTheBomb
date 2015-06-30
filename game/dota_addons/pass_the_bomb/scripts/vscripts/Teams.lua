@@ -1,4 +1,4 @@
-Teams = {}
+Teams = Teams or {}
 
 Teams.Colors = {
 	nil,                   -- unused teams
@@ -28,7 +28,7 @@ Teams.TeamIDs = {
 	DOTA_TEAM_CUSTOM_8,
 }
 
-Teams.Inited = false
+Teams.Inited = Teams.Inited or false
 
 function Teams:Init()
 	if Teams.Inited then return end
@@ -39,3 +39,5 @@ function Teams:Init()
 		SetTeamCustomHealthbarColor( t, Teams.Colors[ t ][ 1 ], Teams.Colors[ t ][ 2 ], Teams.Colors[ t ][ 3 ] )
 	end
 end
+
+return Teams
