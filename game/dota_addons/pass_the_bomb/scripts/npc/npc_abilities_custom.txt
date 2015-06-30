@@ -67,6 +67,75 @@
 			}
 		}
 	}
+	
+	"techies_swap"
+	{
+		"BaseClass"             "ability_datadriven"
+		"AbilityBehavior"       "DOTA_ABILITY_BEHAVIOR_UNIT_TARGET"
+		"AbilityTextureName"    "vengefulspirit_nether_swap"
+		"AbilityUnitTargetTeam" "DOTA_UNIT_TARGET_TEAM_ENEMY"
+		"AbilityUnitTargetType" "DOTA_UNIT_TARGET_HERO"
+
+		"AbilityType"           "DOTA_ABILITY_TYPE_BASIC"
+		"MaxLevel"              "1"
+		"RequiredLevel"         "0"
+
+		"AbilityCastPoint"      "0.2"
+		"AbilityCastRange"      "1000"
+		"AbilityCooldown"       "6"
+
+		"precache"
+		{
+			"soundfile"     "soundevents/game_sounds_heroes/game_sounds_vengefulspirit.vsndevts"
+			"particle"      "particles/units/heroes/hero_vengeful/vengeful_nether_swap.vpcf"
+			"particle"      "particles/units/heroes/hero_vengeful/vengeful_nether_swap_pink.vpcf"		
+		}
+
+		"OnSpellStart"
+		{
+			"FireSound"
+			{
+				"EffectName" "Hero_VengefulSpirit.NetherSwap"
+				"Target"     "TARGET"
+			}
+
+			"FireSound"
+			{
+				"EffectName" "Hero_VengefulSpirit.NetherSwap"
+				"Target"     "CASTER"
+			}
+
+			"FireEffect"																												
+			{
+				"EffectName"       "particles/units/heroes/hero_vengeful/vengeful_nether_swap.vpcf"
+				"EffectAttachType" "start_at_customorigin"
+				
+				"ControlPointEntities"
+				{
+					"TARGET"   "follow_origin"
+					"CASTER"   "follow_origin"
+				}
+			}
+
+			"FireEffect"
+			{
+				"EffectName"       "particles/units/heroes/hero_vengeful/vengeful_nether_swap_pink.vpcf"
+				"EffectAttachType" "start_at_customorigin"
+
+				"ControlPointEntities"
+				{
+					"CASTER"   "follow_origin"
+					"TARGET"   "follow_origin"
+				}
+			}
+
+			"RunScript"
+			{
+				"ScriptFile"       "Abilities/Swap.lua"
+				"Function"         "Swap"
+			}
+		}
+	}
 
 	"techies_pass_the_bomb"
 	{

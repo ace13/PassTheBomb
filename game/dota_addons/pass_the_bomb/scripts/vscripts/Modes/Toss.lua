@@ -5,11 +5,12 @@ function Mode:Init()
 	print( "Toss:Init" )
 
 	GameRules:SetTimeOfDay( 0.26 )
-	self.Listener = ListenToGameEvent( "ptb_bomb_passed", Dynamic_Wrap( self, 'BombPassed' ), self )
 end
 
 function Mode:Start()
 	print( "Toss:Start" )
+
+	self.Listener = ListenToGameEvent( "ptb_bomb_passed", Dynamic_Wrap( self, 'BombPassed' ), self )
 end
 
 function Mode:Cleanup()

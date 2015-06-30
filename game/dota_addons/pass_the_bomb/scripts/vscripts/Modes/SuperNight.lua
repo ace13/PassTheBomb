@@ -6,8 +6,6 @@ function Mode:Init()
 	print( "SuperNight:Init" )
 	GameRules:SetTimeOfDay( 0.76 )
 
-	self.Listener = ListenToGameEvent( "ptb_bomb_passed", Dynamic_Wrap( self, 'BombPassed' ), self )
-
 	if RollPercentage( 25 ) then
 		self.Name = "Dankest of Nights"
 	else
@@ -16,10 +14,14 @@ function Mode:Init()
 end
 
 function Mode:Start()
+	print( "SuperNight:Start" )
+	
 	for _, p in pairs( PlayerRegistry:GetAllPlayers() ) do
 		p:SetVisionMod( 0.6, VISION_NIGHT )
 		p:SetAbilityLevel( "techies_blink", 1 )
 	end
+
+	self.Listener = ListenToGameEvent( "ptb_bomb_passed", Dynamic_Wrap( self, 'BombPassed' ), self )
 end
 
 function Mode:Cleanup()

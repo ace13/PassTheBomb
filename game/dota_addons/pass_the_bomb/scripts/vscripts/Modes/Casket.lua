@@ -5,7 +5,6 @@ function Mode:Init()
 	print( "Casket:Init" )
 
 	GameRules:SetTimeOfDay( 0.26 )
-	self.Listener = ListenToGameEvent( "ptb_bomb_passed", Dynamic_Wrap( self, 'BombPassed' ), self )
 
 	if RollPercentage( 50 ) then
 		self.SuperToss = true
@@ -18,6 +17,8 @@ end
 
 function Mode:Start()
 	print( "Casket:Start" )
+
+	self.Listener = ListenToGameEvent( "ptb_bomb_passed", Dynamic_Wrap( self, 'BombPassed' ), self )
 end
 
 function Mode:Cleanup()

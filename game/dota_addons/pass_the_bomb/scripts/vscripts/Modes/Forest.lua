@@ -7,7 +7,6 @@ function Mode:Init()
 	GameRules:SetTimeOfDay( 0.26 )
 	self.Running = false
 
-	self.Listener = ListenToGameEvent( "ptb_bomb_passed", Dynamic_Wrap( self, 'BombPassed' ), self )
 	self.Timer = Timers:CreateTimer( function() 
 		self:AddTree()
 
@@ -35,6 +34,7 @@ end
 function Mode:Start()
 	print( "Forest:Start" )
 
+	self.Listener = ListenToGameEvent( "ptb_bomb_passed", Dynamic_Wrap( self, 'BombPassed' ), self )
 	self.Running = true
 
 	for _, p in pairs( PlayerRegistry:GetAllPlayers() ) do
@@ -60,12 +60,12 @@ end
 function Mode:AddTree()
 	-- FIXME: Find a proper world origin instead of just bomb_spawn
 	local pos = Entities:FindByName( nil, "bomb_spawn" ):GetAbsOrigin() + Vector(
-		math.random(-1500, 1500),
-		math.random(-1500, 1500),
+		math.random( -1500, 1500 ),
+		math.random( -1500, 1500 ),
 		0
 	)
 
-	-- TODO: Mode heroes off of this position, so they don't get stuck in trees
+	-- TODO: Move heroes off of this position, so they don't get stuck in trees
 	CreateTempTree( pos, 30 )
 end
 

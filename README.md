@@ -26,6 +26,8 @@ Implemented gamemodes:
 - Casket - Daytime, standard blink and toss, but the bomb will bounce to any target in range when you get it
   - Has a super casket mode with upgraded toss too
 - Rooted - Daytime, standard blink and toss, no normal movement
+- Hammer - Daytime, standard blink and toss, bomb ministuns on hit
+- Swap - Daytime, nether swap instead of blink, normal toss
 
 TODO
 ====
@@ -48,7 +50,7 @@ TODO
   - Incognito mode, no countdown or effect for carrying the bomb
   - Huge tree mode, huge trees covering the playing field, hidden healthbars
   - Barred mode, movement blocking rocks/other covering the playing field, no vision blocking though
-  - Heavyweight mode, bomb tossing ministuns
+  - ~~Heavyweight mode, bomb tossing ministuns~~
   - ~~Casket mode, bomb bounces between targets if in range~~
   - Skillshot mode, pass the bomb with mirana arrow / sunstrike / other
   - Drunken mode, camera sways wildly during the round
@@ -56,7 +58,7 @@ TODO
   - Rocket mode, bomb is a gyrocopter homing missile
   - Magnetic mode, bomb is point targeted and seeks towards closest player
   - Bouncing betty mode, bomb spawns in the middle and seeks towards players - speeding up over time, blowing up the first one it touches
-  - Swap mode, Nether Swap instead of blink
+  - ~~Swap mode, Nether Swap instead of blink~~
   - Hook mode, Clockwork Hookshot instead of blink
   - Ghost mode, the bomb carrier is invisible but leaves footprints
   - David and Goliath mode, everybody but the bomb carrier is small, the bomb carrier is huge, no blink

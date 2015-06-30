@@ -272,6 +272,20 @@ function Player:SetAbilityLevel( name, level, give )
 	ability:SetLevel( level )
 end
 
+function Player:SwapAbility( from, to, level )
+	if type( from ) ~= "string" then error( "Invalid from value for SwapAbility" ) end
+	if type( to ) ~= "string" then error( "Invalid to value for SwapAbility" ) end
+
+	if not self:HasAbility( from ) then error( "Player doesn't have from ability" ) end
+	if not self:HasAbility( to ) then
+		self.HeroEntity:AddAbility( to )
+	end
+
+	if not level then level = self:GetAbility( from ):GetLevel() end
+
+	self.HeroEntity:SwapAbilities( from, to, false, true )
+	self:GetAbility( to ):SetLevel( level )
+end
 
 --[[
 --   Event management
