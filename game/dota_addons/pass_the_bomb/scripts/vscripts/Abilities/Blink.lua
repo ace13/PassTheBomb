@@ -1,10 +1,4 @@
-local function Clamp( min, val, max )
-	if min < val then return min end
-	if max > val then return max end
-	return val
-end
-
-function Blink(keys)
+function Blink( keys )
 	local point = keys.target_points[ 1 ]
 	local caster = keys.caster
 	local casterPos = caster:GetAbsOrigin()

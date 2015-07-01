@@ -166,10 +166,12 @@ function PTB:BeginRound( skip_time )
 	if not skip_time then
 		--PTB.Bomb:Drop()
 
-		Say( nil, PTB.CurMode.Name .. " mode in " .. PTB.NewRoundTime .. " seconds...", false )
+		Say( nil, PTB.CurMode.Name .. " mode starts in " .. PTB.NewRoundTime .. " seconds...", false )
 	end
 
 	Timers:CreateTimer( skip_time and 0 or PTB.NewRoundTime, function() 
+		ShowMessage( PTB.CurMode.Name .. " mode!" )
+
 		PTB.Bomb:Take()
 		PTB.State = STATE_ROUND
 
@@ -178,9 +180,8 @@ function PTB:BeginRound( skip_time )
 
 		local living = PlayerRegistry:GetAlivePlayers()
 		local luckyGuy = living[ math.random( #living ) ]
-		PTB.Bomb:Pass( luckyGuy )
 
-		Say( nil, luckyGuy.Name .. " is the lucky guy.", false)
+		PTB.Bomb:Pass( luckyGuy )
 	end )
 end
 
@@ -199,7 +200,7 @@ function PTB:EndRound()
 	if #alive == 1 then
 		local survivor = alive[ 1 ]
 		Say( nil, survivor.Name .. " survived this round!" )
-		Say( nil, "New match starts in " .. math.floor( PTB.NewMatchTime ) .. " seconds.", false )
+		Say( nil, "Next match starts in " .. math.floor( PTB.NewMatchTime ) .. " seconds.", false )
 
 		survivor.Score = survivor.Score + 1
 		survivor.HeroEntity:HeroLevelUp( true )
@@ -211,8 +212,8 @@ function PTB:EndRound()
 			end )
 		end
 	elseif #alive == 0 then
-		Say( nil, "You all died, that's pretty sad...", false )
-		Say( nil, "Next match in " .. math.floor( PTB.NewMatchTime ) .. " seconds.", false )
+		Say( nil, "You all died, that's pretty sad.", false )
+		Say( nil, "Next match starts in " .. math.floor( PTB.NewMatchTime ) .. " seconds.", false )
 	end
 
 	if #alive <= 1 then
@@ -333,6 +334,13 @@ end
 function PTB:EventBombPassed( event )
 	print( "PTB:EventBombPassed" )
 	-- PrintTable( event )
+
+	local carrier = PlayerRegistry:GetPlayer( { UserID = event.new_carrier } )
+	if event.old_carrier == -1 then
+		ShowMessage( carrier.Name .. " has the bomb!" )
+	else
+		ShowMessage( carrier.Name .. " got the bomb!" )
+	end
 end
 
 function PTB:EventEntityKilled( event )
