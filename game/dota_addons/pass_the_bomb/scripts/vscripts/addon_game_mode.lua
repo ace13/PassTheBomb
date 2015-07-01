@@ -1,10 +1,10 @@
 require( "Util" )
 require( "PTB" )
 
-local function AddTimeCommand( command, description, round_time, match_time, extra_command )
+local function AddTimeCommand( command, description, round_time, preround_time, match_time, extra_command )
 	Convars:RegisterCommand( command, function(...)
 		PTB.RoundTime = round_time
-		PTB.NewRoundTime = match_time / 2
+		PTB.NewRoundTime = preround_time
 		PTB.NewMatchTime = match_time
 		GameRules:SetPreGameTime( match_time )
 
@@ -32,16 +32,16 @@ function Activate()
 	PTB:Init()
 
 	-- TODO: Make a UI for this
-	AddTimeCommand( "ptb_normal", "Normal rounds", 15, 20, function()
+	AddTimeCommand( "ptb_normal", "Normal rounds", 15, 10, 15, function()
 		Say( nil, "Normal round lengths", false )
 	end )
-	AddTimeCommand( "ptb_moderate", "Moderately fast rounds", 10, 15, function()
+	AddTimeCommand( "ptb_moderate", "Moderately fast rounds", 10, 10, 15, function()
 		Say( nil, "Moderately fast rounds", false )
 	end )
-	AddTimeCommand( "ptb_fast", "Fast rounds", 5, 10, function()
+	AddTimeCommand( "ptb_fast", "Fast rounds", 5, 5, 5, function()
 		Say( nil, "Fast rounds", false )
 	end )
-	AddTimeCommand( "ptb_sanic", "Gotta go fast", 1, 5, function()
+	AddTimeCommand( "ptb_sanic", "Gotta go fast", 1, 2, 5, function()
 		Say( nil, "Sanic mode: ACTIVE", false )
 		Say( nil, "May god have mercy on your souls", false )
 	end )

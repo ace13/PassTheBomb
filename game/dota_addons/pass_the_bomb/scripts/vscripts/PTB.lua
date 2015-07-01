@@ -13,7 +13,7 @@ STATE_POSTROUND = 3
 PTB.RoundLimit = 5
 PTB.RoundTime = 15
 PTB.NewRoundTime = 10
-PTB.NewMatchTime = 20
+PTB.NewMatchTime = 15
 
 PTB.AddedAI = false
 PTB.Testing = false
@@ -48,8 +48,9 @@ function PTB:Init()
 		"Normal",
 
 		"Blink", "Casket", "Forest",
-		"Night", "Rooted", "Speed",
-		"SuperNight", "Toss"
+		"Hammer", "Night", "Rooted",
+		"Speed", "SuperNight", "Swap",
+		"Toss"
 	}
 	PTB.Players = { }
 	PTB.State = STATE_PREROUND
@@ -89,6 +90,8 @@ function PTB:Init()
 			-- Reassign teams
 			PTB:_EnsureTeams()
 		end )
+
+		ShowMessage( "First round starts in " .. PTB.NewMatchTime .. " seconds!" )
 	end )
 
 	PTB:AddStateHandler( DOTA_GAMERULES_STATE_GAME_IN_PROGRESS, function() 
@@ -102,7 +105,7 @@ function PTB:Init()
 
 	GameRules:SetGoldPerTick( 0 )
 	GameRules:SetHeroRespawnEnabled( false )
-	GameRules:SetPreGameTime( 30 )
+	GameRules:SetPreGameTime( PTB.NewMatchTime )
 	GameRules:SetSameHeroSelectionEnabled( true )
 	GameRules:SetFirstBloodActive( false )
 	GameRules:SetUseCustomHeroXPValues( true )
@@ -393,7 +396,7 @@ function PTB:EventNPCSpawned( event )
 
 	local npc = EntIndexToHScript( event.entindex )
 
-	if not IsValidEntity( npc) or not npc:IsHero() then return end
+	if not IsValidEntity( npc ) or not npc:IsHero() then return end
 
 	local player = npc.Player or nil
 
@@ -452,7 +455,7 @@ function PTB:EventPlayerJoinedTeam( event )
 	if player then
 		player:OnJoinedTeam( event )
 	else
-		print( "Non-existing player, priming name \"" .. event.name .. "\" for " .. (event.userid - 1) )
+		print( "Non-existing player, priming name \"" .. event.name .. "\" for " .. ( event.userid - 1 ) )
 		PlayerRegistry:PrimeName( event.userid - 1, event.name )
 	end
 end
