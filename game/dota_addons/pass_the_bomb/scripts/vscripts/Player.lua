@@ -65,7 +65,7 @@ end
 function Player:_ResetHero()
 	self.HeroEntity:SetTeam( self.Team )
 	self.HeroEntity:SetAbilityPoints( 0 )
-	self.HeroEntity:SetAngles( 0, math.random(360), 0 )
+	self.HeroEntity:SetAngles( 0, math.random( 360 ), 0 )
 	self.HeroEntity:SetDeathXP( 0 )
 	self.HeroEntity:SetCustomDeathXP( 0 )
 	self.HeroEntity:SetMoveCapability( DOTA_UNIT_CAP_MOVE_GROUND )

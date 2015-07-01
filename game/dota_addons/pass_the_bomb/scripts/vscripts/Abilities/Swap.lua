@@ -8,5 +8,8 @@ function Swap( keys )
 	caster:SetAbsOrigin( target_pos )
 	target:SetAbsOrigin( caster_pos )
 
+	ProjectileManager:ProjectileDodge( caster )
+	ProjectileManager:ProjectileDodge( target )
+
 	target:Stop()
 end
