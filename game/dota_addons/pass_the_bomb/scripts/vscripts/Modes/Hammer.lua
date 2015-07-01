@@ -20,9 +20,12 @@ function Mode:Cleanup()
 end
 
 function Mode:BombPassed( event )
-	local to = PlayerRegistry:GetPlayer( { UserID = event.new_carrier } )
+	local from = PlayerRegistry:GetPlayer( { UserID = event.old_carrier } )
+	local to   = PlayerRegistry:GetPlayer( { UserID = event.new_carrier } )
 
-	to.HeroEntity:AddNewModifier( "modifier_stunned", { Duration = 0.5 } )
+	if not from then from = to end
+
+	to.HeroEntity:AddNewModifier( from.HeroEntity, from:GetAbility( "techies_pass_the_bomb" ), "modifier_stunned", { Duration = 0.5 } )
 end
 
 return Mode

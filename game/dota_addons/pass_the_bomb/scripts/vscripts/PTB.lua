@@ -202,7 +202,7 @@ function PTB:EndRound()
 	local alive = PlayerRegistry:GetAlivePlayers()
 	if #alive == 1 then
 		local survivor = alive[ 1 ]
-		Say( nil, survivor.Name .. " survived this round!" )
+		Say( nil, survivor.Name .. " survived this round!", false )
 		Say( nil, "Next match starts in " .. math.floor( PTB.NewMatchTime ) .. " seconds.", false )
 
 		survivor.Score = survivor.Score + 1
