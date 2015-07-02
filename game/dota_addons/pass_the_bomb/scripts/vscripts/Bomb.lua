@@ -13,6 +13,7 @@ end
 --[[
 --   Bomb registry, for multi-bomb modes
 --]]
+
 function Bombs.Register( bomb )
 	Bombs[ #Bombs + 1 ] = bomb
 	bomb.ID = #Bombs
@@ -20,6 +21,11 @@ end
 
 function Bombs.Find( id )
 	return Bombs[ id ]
+end
+
+function Bombs:Remove( bomb )
+	if not bomb.ID or not Bombs[ bomb.ID ] then return end
+	Bombs[ bomb.ID ] = nil
 end
 
 
@@ -58,50 +64,6 @@ end
 function Bomb:Drop()
 	self:_Reset()
 	CreateItemOnPositionSync( Entities:FindByName( nil, "bomb_spawn" ):GetAbsOrigin(), self.Item )
-end
-
-function Bomb:StartCountdown()
-	if PTB.State ~= STATE_ROUND then return end
-
-	self.ExplodePoint = GameRules:GetGameTime() + PTB.RoundTime
-	self.Countdown = true
-
-	Timers:CreateTimer( function() return self:OnTick() end )
-end
-
-function Bomb:Explode()
-	if self.Countdown then self.Countdown = nil end
-
-	local reason = self.LastCarrier and self.LastCarrier or self.Carrier
-	PTB:ExplodePlayer( self.Carrier, reason  )
-
-	FireGameEvent( "ptb_bomb_exploded", {
-		carrier = self.Carrier.UserID,
-		bomb    = self.ID
-	} )
-
-	self:Take()
-	PTB:EndRound()
-end
-
-function Bomb:OnTick()
-	local timeLeft = self.ExplodePoint - GameRules:GetGameTime()
-
-	if timeLeft <= 0 then
-		self:Explode()
-
-		return
-	else
-		local nicetime = math.ceil( timeLeft )
-
-		Messages:Number( {
-			Target = self.Carrier.HeroEntity,
-			Number = nicetime,
-			Color = Vector( 255, 0, 0 )
-		} )
-
-		return 1
-	end
 end
 
 function Bomb:Take( skip )
@@ -160,3 +122,54 @@ function Bomb:Pass( player, from )
 		print( self.Carrier.Name .. " got a bomb." )
 	end
 end
+
+function Bomb:Explode()
+	if self.Countdown then self.Countdown = nil end
+
+	local reason = self.LastCarrier and self.LastCarrier or self.Carrier
+	PTB:ExplodePlayer( self.Carrier, reason  )
+
+	FireGameEvent( "ptb_bomb_exploded", {
+		carrier = self.Carrier.UserID,
+		bomb    = self.ID
+	} )
+
+	self:Take()
+	PTB:EndRound()
+end
+
+
+--[[
+--   Timing functions
+--]]
+
+function Bomb:StartCountdown()
+	if PTB.State ~= STATE_ROUND then return end
+
+	self.ExplodePoint = GameRules:GetGameTime() + PTB.RoundTime
+	self.Countdown = true
+
+	Timers:CreateTimer( function() return self:OnTick() end )
+end
+
+function Bomb:OnTick()
+	local timeLeft = self.ExplodePoint - GameRules:GetGameTime()
+
+	if timeLeft <= 0 then
+		self:Explode()
+
+		return
+	else
+		local nicetime = math.ceil( timeLeft )
+
+		Messages:Number( {
+			Target = self.Carrier.HeroEntity,
+			Number = nicetime,
+			Color = Vector( 255, 0, 0 )
+		} )
+
+		return 1
+	end
+end
+
+
