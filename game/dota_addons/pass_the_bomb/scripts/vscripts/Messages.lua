@@ -3,6 +3,7 @@ Messages = Messages or {}
 MESSAGE_TOP = 0
 MESSAGE_CENTER = 1
 MESSAGE_BOTTOM = 2
+MESSAGE_TICKER = 3
 
 SYMBOL_PRE_PLUS = 0
 SYMBOL_PRE_MINUS = 1
@@ -25,6 +26,15 @@ SYMBOL_POST_SHIELD = 7
 SYMBOL_POST_POINTFIVE = 8
 
 --[[
+--   Helper functions
+--]]
+
+local function ColToHex( color )
+	return string.format( "%x%x%x", color[ 1 ], color[ 2 ], color[ 3 ] )
+end
+
+
+--[[
 --   Initializer functions
 --]]
 
@@ -38,8 +48,21 @@ end
 --]]
 
 function Messages:Display( message, data )
+	data = data or {}
+
+	local time = data.Duration and tonumber( data.Duration ) or 1
+	local where = data.Type and tonumber( data.Type ) or MESSAGE_BOTTOM
+	local color = data.Color or Vector( 255, 255, 255 )
+
 	print( "TODO: Messages:Display" )
-	Say( nil, message, false )
+	if where == MESSAGE_TICKER then
+		if color then
+			message = "<font color=\"#" .. ColToHex( color )  .. "\">" .. message .. "</font>"
+		end
+		SendCustomMessage( message, -1, 1 )
+	else
+		Say( nil, message, false )
+	end
 end
 
 function Messages:Number( data )
@@ -67,6 +90,7 @@ function Messages:Number( data )
 end
 Messages.Popup = Messages.Number
 
+
 --[[
 --   Announcer functions
 --]]
@@ -74,6 +98,5 @@ Messages.Popup = Messages.Number
 function Messages:Announce( announcement, data )
 	print( "TODO: Announcer '" .. announcement "'" )
 end
-
 
 return Messages

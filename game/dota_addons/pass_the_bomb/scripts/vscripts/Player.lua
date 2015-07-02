@@ -307,6 +307,12 @@ function Player:OnDied( event )
 	print( self.Name .. " died!" )
 
 	self.Alive = false
+
+	Timers:CreateTimer( function()
+		AddFOWViewer( self.Team, Entities:FindByName( nil, "bomb_spawn" ):GetAbsOrigin(), 2048, 0.6, false )
+
+		if not self.Alive then return 0.5 end
+	end )
 end
 
 function Player:OnDisconnected( event )
