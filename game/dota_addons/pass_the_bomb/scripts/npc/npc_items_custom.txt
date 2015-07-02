@@ -51,6 +51,16 @@
 						"Target"            "TARGET"
 					}
 				}
+
+				"ThinkInterval" "0.25"
+				"OnIntervalThink"
+				{
+					"RunScript"
+					{
+						"ScriptFile"        "Abilities/Bomb.lua"
+						"Function"          "Tick"
+					}
+				}
 			}
 		}
 	}
