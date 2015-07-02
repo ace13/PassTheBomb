@@ -28,6 +28,12 @@
 	{
 		"old_carrier" "short"
 		"new_carrier" "short"
-		"bomb" "short"
+		"bomb"        "short"
+	}
+	
+	"ptb_bomb_exploded"
+	{
+		"carrier" "short"
+		"bomb"    "short"
 	}
 }

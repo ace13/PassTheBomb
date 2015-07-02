@@ -35,9 +35,9 @@ function PTB:Init()
 
 	print( "Loading modules:" )
 	LoadModule( "Bomb" )
+	LoadModule( "Messages" )
 	LoadModule( "Player" )
 	LoadModule( "PlayerRegistry" )
-	LoadModule( "Popups" )
 	LoadModule( "Teams" )
 	LoadModule( "Timers" )
 
@@ -66,6 +66,7 @@ function PTB:Init()
 	ListenToGameEvent( 'player_team',         Dynamic_Wrap( PTB, 'EventPlayerJoinedTeam' ),   PTB )
 	ListenToGameEvent( 'player_disconnect',   Dynamic_Wrap( PTB, 'EventPlayerDisconnected' ), PTB )
 	ListenToGameEvent( 'player_reconnected',  Dynamic_Wrap( PTB, 'EventPlayerReconnected' ),  PTB )
+	ListenToGameEvent( 'ptb_bomb_exploded',   Dynamic_Wrap( PTB, 'EventBombExploded' ),       PTB )
 	ListenToGameEvent( 'ptb_bomb_passed',     Dynamic_Wrap( PTB, 'EventBombPassed' ),         PTB )
 	ListenToGameEvent( 'npc_spawned',         Dynamic_Wrap( PTB, 'EventNPCSpawned' ),         PTB )
 
@@ -91,7 +92,7 @@ function PTB:Init()
 			PTB:_EnsureTeams()
 		end )
 
-		ShowMessage( "First round starts in " .. PTB.NewMatchTime .. " seconds!" )
+		Messages:Display( "First round starts in " .. PTB.NewMatchTime .. " seconds!", { Type = MESSAGE_CENTER, Duration = 5 } )
 	end )
 
 	PTB:AddStateHandler( DOTA_GAMERULES_STATE_GAME_IN_PROGRESS, function() 
@@ -168,12 +169,12 @@ function PTB:BeginRound( skip_time )
 
 	if not skip_time then
 		--PTB.Bomb:Drop()
-
-		Say( nil, PTB.CurMode.Name .. " mode starts in " .. PTB.NewRoundTime .. " seconds...", false )
+		
+		Messages:Display( string.format( "%s mode starts in %d seconds.", PTB.CurMode.Name, PTB.NewRoundTime ) )
 	end
 
 	Timers:CreateTimer( skip_time and 0 or PTB.NewRoundTime, function() 
-		ShowMessage( PTB.CurMode.Name .. " mode!" )
+		Messages:Display( PTB.CurMode.Name .. " mode!", { Type = MESSAGE_CENTER, Duration = 4 } )
 
 		PTB.Bomb:Take()
 		PTB.State = STATE_ROUND
@@ -339,10 +340,29 @@ function PTB:EventBombPassed( event )
 	-- PrintTable( event )
 
 	local carrier = PlayerRegistry:GetPlayer( { UserID = event.new_carrier } )
+	local bomb = Bombs.Find( event.bomb )
+
+	if not bomb.LastCarrier then
+		Messages:Announce( "humiliation", { Reason = carrier, Message = "couldn't get rid of the bomb" } )
+	end
+end
+
+function PTB:EventBombPassed( event )
+	print( "PTB:EventBombPassed" )
+	-- PrintTable( event )
+
+	local carrier = PlayerRegistry:GetPlayer( { UserID = event.new_carrier } )
 	if event.old_carrier == -1 then
-		ShowMessage( carrier.Name .. " has the bomb!" )
+		Messages:Display( carrier.Name .. " has the bomb!", { Type = MESSAGE_BOTTOM, Duration = 2 } )
 	else
-		ShowMessage( carrier.Name .. " got the bomb!" )
+		Messages:Display( carrier.Name .. " got the bomb!", { Type = MESSAGE_BOTTOM } )
+	end
+
+	local bomb = Bombs.Find( event.bomb )
+	local time = bomb:TimeLeft()
+
+	if time <= 1 then
+		Messages:Announce( "last_second_save", { Reason = bomb.LastCarrier, Message = "last second pass" } )
 	end
 end
 

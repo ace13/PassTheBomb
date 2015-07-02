@@ -13,18 +13,18 @@ end
 --[[
 --   Bomb registry, for multi-bomb modes
 --]]
-function Bombs:Register( bomb )
+function Bombs.Register( bomb )
 	Bombs[ #Bombs + 1 ] = bomb
 	bomb.ID = #Bombs
 end
 
-function Bombs:Find( id )
+function Bombs.Find( id )
 	return Bombs[ id ]
 end
 
 
 --[[
---   Bomb functions
+--   Initializer functions
 --]]
 
 function Bomb:Init()
@@ -32,16 +32,32 @@ function Bomb:Init()
 	Bombs:Register( self )
 end
 
-function Bomb:Drop()
-	self:_Reset()
-	CreateItemOnPositionSync( Entities:FindByName( nil, "bomb_spawn" ):GetAbsOrigin(), self.Item )
-end
-
 function Bomb:_Reset()
 	self.Carrier = nil
 	self.Item = CreateItem( "item_bomb", nil, nil )
 	self.Item.Bomb = self
 	self.LastCarrier = nil
+end
+
+
+--[[
+--   Accessor functions
+--]]
+
+function Bomb:TimeLeft()
+	if not self.Countdown then return nil end
+
+	return self.ExplodePoint - GameRules:GetGameTime()
+end
+
+
+--[[
+--   Handling functions
+--]]
+
+function Bomb:Drop()
+	self:_Reset()
+	CreateItemOnPositionSync( Entities:FindByName( nil, "bomb_spawn" ):GetAbsOrigin(), self.Item )
 end
 
 function Bomb:StartCountdown()
@@ -59,6 +75,11 @@ function Bomb:Explode()
 	local reason = self.LastCarrier and self.LastCarrier or self.Carrier
 	PTB:ExplodePlayer( self.Carrier, reason  )
 
+	FireGameEvent( "ptb_bomb_exploded", {
+		carrier = self.Carrier.UserID,
+		bomb    = self.ID
+	} )
+
 	self:Take()
 	PTB:EndRound()
 end
@@ -73,7 +94,7 @@ function Bomb:OnTick()
 	else
 		local nicetime = math.ceil( timeLeft )
 
-		ShowPopup( {
+		Messages:Number( {
 			Target = self.Carrier.HeroEntity,
 			Number = nicetime,
 			Color = Vector( 255, 0, 0 )

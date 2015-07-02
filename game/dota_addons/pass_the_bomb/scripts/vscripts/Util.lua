@@ -130,9 +130,3 @@ function SeedRandom( seed )
 
 	math.randomseed( tonumber( seed ) )
 end
-
--- FIXME: Add UI pieces for this
-function ShowMessage( message )
-	print( "ShowMessage: " .. tostring( message ) )
-	Say( nil, tostring( message ), false )
-end

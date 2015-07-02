@@ -5,21 +5,29 @@ function PassTheBomb( keys )
 
 	ability:EndCooldown()
 	PTB.Bomb:Pass( target.Player, caster.Player )
-
 end
 
 function Refresh( keys )
 	local ability = keys.ability
-	-- PrintTable( keys )
+	local caster = keys.caster
 
 	ability:EndCooldown()
-	ability:StartCooldown( 2 )
+	ability:StartCooldown( 1.5 )
 
-	ShowPopup( {
-		Target = keys.caster.Player.HeroEntity,
+	Messages:Popup( {
+		Target = caster,
 		Type = "crit",
-		PreSymbol = POPUP_SYMBOL_PRE_EVADE,
+		PreSymbol = SYMBOL_PRE_EVADE,
 		Color = Vector( 255, 255, 0 ),
 		Duration = 2
 	} )
+	
+	if not caster.Player then return end
+
+	local bomb = caster.Player:GetItem( "item_bomb" )
+	local time = bomb:TimeLeft()
+
+	if time <= 1.5 then
+		Messages:Announce( "impressive", { Reason = nil, Message = "did a last second dodge" } )
+	end
 end
