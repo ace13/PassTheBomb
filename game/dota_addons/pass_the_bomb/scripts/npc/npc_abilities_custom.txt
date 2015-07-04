@@ -67,6 +67,67 @@
 			}
 		}
 	}
+
+	"techies_eblink"
+	{
+		"BaseClass"          "ability_datadriven"
+		"AbilityBehavior"    "DOTA_ABILITY_BEHAVIOR_NO_TARGET"
+		"AbilityTextureName" "antimage_blink"
+
+		"precache"
+		{
+			"soundfile"     "soundevents/game_sounds_heroes/game_sounds_antimage.vsndevts"
+			"particle"      "particles/units/heroes/hero_antimage/antimage_blink_end.vpcf"
+			"particle"      "particles/units/heroes/hero_antimage/antimage_blink_start.vpcf"
+		}
+
+		"AbilityCastPoint" "0.2"
+		"AbilityCastRange" "%blink_range"
+		"AbilityCooldown"  "6.0"
+		"MaxLevel"         "1"
+		"RequiredLevel"    "0"
+
+		"AbilitySpecial"
+		{
+			"var_type"    "FIELD_INTEGER"
+			"blink_range" "1000"
+		}
+
+		"OnSpellStart"
+		{
+			"RunScript"
+			{
+				"ScriptFile"    "scripts/vscripts/Abilities/Blink.lua"
+				"Function"      "EBlink"
+			}
+
+			"FireSound"
+			{
+				"EffectName"    "Hero_Antimage.Blink_out"
+				"Target"        "CASTER"
+			}
+
+			"AttachEffect"
+			{
+				"EffectName"    "particles/units/heroes/hero_antimage/antimage_blink_start.vpcf"
+				"Target"        "CASTER"
+				"EffectAttachType" "attach_hitloc"
+			}
+
+			"FireSound"
+			{
+				"EffectName"    "Hero_Antimage.Blink_in"
+				"Target"        "CASTER"
+			}
+
+			"AttachEffect"
+			{
+				"EffectName"    "particles/units/heroes/hero_antimage/antimage_blink_end.vpcf"
+				"Target"        "CASTER"
+				"EffectAttachType" "follow_origin"
+			}
+		}
+	}
 	
 	"techies_swap"
 	{

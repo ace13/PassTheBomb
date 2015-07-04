@@ -12,7 +12,7 @@ function Refresh( keys )
 	local caster = keys.caster
 
 	ability:EndCooldown()
-	ability:StartCooldown( 1.5 )
+	ability:StartCooldown( 1 )
 
 	Messages:Popup( {
 		Target = caster,
@@ -27,7 +27,8 @@ function Refresh( keys )
 	local bomb = caster.Player:GetItem( "item_bomb" )
 	local time = bomb:TimeLeft()
 
-	if time <= 1.5 then
+	if time <= 1 then
+		-- Humiliation? Last second save?
 		Messages:Announce( "impressive", { Reason = nil, Message = "did a last second dodge" } )
 	end
 end
