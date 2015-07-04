@@ -1,7 +1,7 @@
 // Dota Heroes File
 "DOTAAbilities"
 {
-	"Version"		"1"
+	"Version" "1"
 
 	"techies_blink"
 	{
@@ -149,7 +149,7 @@
 		{
 			"soundfile"     "soundevents/game_sounds_heroes/game_sounds_vengefulspirit.vsndevts"
 			"particle"      "particles/units/heroes/hero_vengeful/vengeful_nether_swap.vpcf"
-			"particle"      "particles/units/heroes/hero_vengeful/vengeful_nether_swap_pink.vpcf"		
+			"particle"      "particles/units/heroes/hero_vengeful/vengeful_nether_swap_pink.vpcf"
 		}
 
 		"OnSpellStart"
@@ -166,7 +166,7 @@
 				"Target"     "CASTER"
 			}
 
-			"FireEffect"																												
+			"FireEffect"
 			{
 				"EffectName"       "particles/units/heroes/hero_vengeful/vengeful_nether_swap.vpcf"
 				"EffectAttachType" "start_at_customorigin"
@@ -316,8 +316,8 @@
 		{
 			"FireSound"
 			{
-				"EffectName"	"Hero_Techies.Suicide"
-				"Target" 		"CASTER"
+				"EffectName" "Hero_Techies.Suicide"
+				"Target"     "CASTER"
 			}
 
 			"FireEffect"
