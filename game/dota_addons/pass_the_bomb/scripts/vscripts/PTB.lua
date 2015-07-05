@@ -41,7 +41,9 @@ function PTB:Init()
 	LoadModule( "Teams" )
 	LoadModule( "Timers" )
 
+	Messages:Init()
 	PlayerRegistry:Init()
+	-- Teams:Init() -- TODO: Move team initialization to earlier
 
 	PTB.LastTick = GameRules:GetGameTime()
 	PTB.ModeNames = {
@@ -49,8 +51,8 @@ function PTB:Init()
 
 		"Blink", "Casket", "Forest",
 		"Hammer", "Night", "Rooted",
-		"Speed", "SuperNight", "Swap",
-		"Toss"
+		"Speed", "Super", "SuperNight",
+		"Swap", "Toss"
 	}
 	PTB.Players = { }
 	PTB.State = STATE_PREROUND
@@ -100,6 +102,7 @@ function PTB:Init()
 	end )
 
 	-- Game rules
+	-- TODO: Move team initialization earlier
 	GameRules:SetCustomGameTeamMaxPlayers( DOTA_TEAM_GOODGUYS, 10 )
 	GameRules:SetCustomGameTeamMaxPlayers( DOTA_TEAM_BADGUYS, 0 )
 	GameRules:SetCustomVictoryMessage( "Boom! Hahahaha" )
