@@ -33,6 +33,9 @@ local function ColToHex( color )
 	return string.format( "%x%x%x", color[ 1 ], color[ 2 ], color[ 3 ] )
 end
 
+local function ColToLong( color )
+	return 0 -- TODO
+end
 
 --[[
 --   Initializer functions
@@ -56,11 +59,14 @@ function Messages:Display( message, data )
 
 	print( "TODO: Messages:Display" )
 	if where == MESSAGE_TICKER then
-		if color then
+		if data.Color then
 			message = "<font color=\"#" .. ColToHex( color )  .. "\">" .. message .. "</font>"
 		end
 		SendCustomMessage( message, -1, 1 )
 	else
+		data.Message = message
+		if data.Color then data.Color = ColToLong( color ) end
+		-- FireGameEvent( "HudMessage", data ) 
 		Say( nil, message, false )
 	end
 end

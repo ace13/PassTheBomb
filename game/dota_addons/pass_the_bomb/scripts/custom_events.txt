@@ -36,4 +36,11 @@
 		"carrier" "short"
 		"bomb"    "short"
 	}
+
+	"ptb_hud_message"
+	{
+		"message"  "string"
+		"duration" "float"
+		"color"    "long"
+	}
 }
