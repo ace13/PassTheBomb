@@ -28,6 +28,8 @@ Implemented gamemodes:
 - Rooted - Daytime, standard blink and toss, no normal movement
 - Hammer - Daytime, standard blink and toss, bomb ministuns on hit
 - Swap - Daytime, nether swap instead of blink, normal toss
+- Supermench - Daytime, super blink, super toss, super speed
+- Emergency Blink - Daytime, blink is not targetable, normal tossing
 
 TODO
 ====
@@ -62,4 +64,4 @@ TODO
   - Hook mode, Clockwork Hookshot instead of blink
   - Ghost mode, the bomb carrier is invisible but leaves footprints
   - David and Goliath mode, everybody but the bomb carrier is small, the bomb carrier is huge, no blink
-  - Emergency blink mode, blink is not targetable, blinks in a random direction
+  - ~~Emergency blink mode, blink is not targetable, blinks in a random direction~~

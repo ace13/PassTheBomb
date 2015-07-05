@@ -49,10 +49,10 @@ function PTB:Init()
 	PTB.ModeNames = {
 		"Normal",
 
-		"Blink", "Casket", "Forest",
-		"Hammer", "Night", "Rooted",
-		"Speed", "Super", "SuperNight",
-		"Swap", "Toss"
+		"Blink", "Casket", "EBlink",
+		"Forest", "Hammer", "Night",
+		"Rooted", "Speed", "Super",
+		"SuperNight", "Swap", "Toss"
 	}
 	PTB.Players = { }
 	PTB.State = STATE_PREROUND
