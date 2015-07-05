@@ -103,8 +103,8 @@ function Player:SetTeam( teamID )
 		error( self.Name .. " failed to set team to " .. teamID .. "!" )
 	end
 
-	if Teams.Colors[ self.Team ] then
-		local col = Teams.Colors[ self.Team ]
+	if Teams[ self.Team ] then
+		local col = Teams[ self.Team ].Color
 		PlayerResource:SetCustomPlayerColor( self.UserID, col[ 1 ], col[ 2 ], col[ 3 ] )
 	end
 
@@ -348,8 +348,8 @@ function Player:OnJoinedTeam( event )
 
 	self.Team = event.team
 
-	if Teams.Colors[ self.Team ] then
-		local col = Teams.Colors[ self.Team ]
+	if Teams[ self.Team ] then
+		local col = Teams[ self.Team ].Color
 		PlayerResource:SetCustomPlayerColor( self.UserID, col[ 1 ], col[ 2 ], col[ 3 ] )
 	end
 
