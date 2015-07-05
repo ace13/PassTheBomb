@@ -60,8 +60,15 @@ TODO
   - Rocket mode, bomb is a gyrocopter homing missile
   - Magnetic mode, bomb is point targeted and seeks towards closest player
   - Bouncing betty mode, bomb spawns in the middle and seeks towards players - speeding up over time, blowing up the first one it touches
+    - Hungry hungry mode? The same but with a passable target
   - ~~Swap mode, Nether Swap instead of blink~~
   - Hook mode, Clockwork Hookshot instead of blink
   - Ghost mode, the bomb carrier is invisible but leaves footprints
   - David and Goliath mode, everybody but the bomb carrier is small, the bomb carrier is huge, no blink
   - ~~Emergency blink mode, blink is not targetable, blinks in a random direction~~
+  - Ice mode, ground has low friction
+  - Slide mode, everybody's always sliding forward, no normal movement
+  - Speedball mode, only way to move is an ability that sends the player/other player shooting off in a direction and bouncing off walls/other players
+  - Newton mode, passing the bomb applies an equal but opposite effect to you
+  - Carapace mode, shorter bomb tossing, spiked carapace instead of blink
+  - Trap mode, no blink, short toss range, but able to place and explode slowing traps on the ground

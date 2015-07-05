@@ -142,13 +142,23 @@ end
 --]]
 
 function PTB:PickMode()
-	if not PTB.LastMode then
+	if #PTB.Modes < 3 then
+		if #PTB.Modes == 2 then
+			for k, v in pairs( PTB.Modes ) do
+				if k ~= PTB.LastMode then
+					return v
+				end
+			end
+		else
+			return PTB.LastMode
+		end
+	elseif not PTB.LastMode and PTB.Modes.Normal then
 		return PTB.Modes.Normal -- Always start on normal mode
 	else
 		local alive = PlayerRegistry:GetAlivePlayers()
 
 		-- Only normal mode on the last 1 v 1
-		if #alive == 2 then return PTB.Modes.Normal end
+		if #alive == 2 and PTB.Modes.Normal then return PTB.Modes.Normal end
 
 		local total = PlayerRegistry:GetAllPlayers()
 		local perc = #alive / #total
