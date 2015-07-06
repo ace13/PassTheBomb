@@ -30,7 +30,7 @@ end
 function Mode:BombPassed( event )
 	local to = PlayerRegistry:GetPlayer( { UserID = event.new_carrier } )
 
-	to:SetAbilityLevel( "techies_pass_the_bomb", 2 )
+	to:SetAbilityLevel( "techies_pass_the_bomb", 3 )
 end
 
 return Mode

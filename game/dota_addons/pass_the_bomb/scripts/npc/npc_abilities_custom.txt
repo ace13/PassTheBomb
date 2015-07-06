@@ -207,7 +207,7 @@
 		"AbilityUnitTargetType" "DOTA_UNIT_TARGET_HERO"
 
 		"AbilityType"           "DOTA_ABILITY_TYPE_BASIC"
-		"MaxLevel"              "2"
+		"MaxLevel"              "3"
 		"RequiredLevel"         "0"
 
 		"AbilityCastPoint"      "0.0"
@@ -227,13 +227,13 @@
 			"01"
 			{
 				"var_type"      "FIELD_INTEGER"
-				"cast_range"    "700 2048"
+				"cast_range"    "400 700 2048"
 			}
 
 			"02"
 			{
 				"var_type"      "FIELD_FLOAT"
-				"throw_speed"   "1000 2024"
+				"throw_speed"   "700 1000 2024"
 			}
 
 			"03"

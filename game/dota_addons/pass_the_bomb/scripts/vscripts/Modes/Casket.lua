@@ -34,7 +34,7 @@ function Mode:BombPassed( event )
 	local ability = to:GetAbility( "techies_pass_the_bomb" )
 
 	if self.SuperToss then
-		ability:SetLevel( 2 )
+		ability:SetLevel( 3 )
 	end
 
 	local pos = to.HeroEntity:GetAbsOrigin()
