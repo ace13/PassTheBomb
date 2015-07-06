@@ -43,7 +43,10 @@ function PTB:Init()
 
 	Messages:Init()
 	PlayerRegistry:Init()
+
+	Teams:AddTeam( DOTA_TEAM_GOODGUYS, "Temporary Team", Vector( 255, 255, 255 ), 10 )
 	-- Teams:Init() -- TODO: Move team initialization to earlier
+
 
 	PTB.LastTick = GameRules:GetGameTime()
 	PTB.ModeNames = {
@@ -337,7 +340,7 @@ function PTB:_EnsureTeams()
 	CustomGameEventManager:Send_ServerToAllClients( "ptb_teams_changed", { } )
 
 	for _, ply in pairs( PlayerRegistry:GetAllPlayers() ) do
-		ply:SetTeam( Teams.TeamIDs[ ply.ID ] )
+		ply:SetTeam( Teams:FindFirstFreeTeam().ID )
 
 		ply.HeroEntity:RespawnHero( false, true, false )
 	end
@@ -460,7 +463,7 @@ function PTB:EventPlayerJoined( event )
 
 	local ply = EntIndexToHScript( event.index + 1 )
 
-	ply:SetTeam( DOTA_TEAM_GOODGUYS )
+	ply:SetTeam( Teams:FindFirstFreeTeam() )
 
 	PTB.HasFirstClient = true
 	PTB:TestingClients()
