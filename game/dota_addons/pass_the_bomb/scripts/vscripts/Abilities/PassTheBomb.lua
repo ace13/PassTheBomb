@@ -12,7 +12,7 @@ function Refresh( keys )
 	local caster = keys.caster
 
 	ability:EndCooldown()
-	ability:StartCooldown( 1 )
+	-- ability:StartCooldown( 1 )
 
 	Messages:Popup( {
 		Target = caster,
@@ -29,6 +29,6 @@ function Refresh( keys )
 
 	if time <= 1 then
 		-- Humiliation? Last second save?
-		Messages:Announce( "impressive", { Reason = nil, Message = "did a last second dodge" } )
+		Messages:Announce( "missed", { Reason = nil, Message = "Missed at the last second" } )
 	end
 end
