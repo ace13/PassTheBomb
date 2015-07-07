@@ -27,8 +27,8 @@ function Refresh( keys )
 	local bomb = caster.Player:GetItem( "item_bomb" )
 	local time = bomb:TimeLeft()
 
-	if time <= 1 then
+	-- if time <= 1 then
 		-- Humiliation? Last second save?
-		Messages:Announce( "missed", { Reason = nil, Message = "Missed at the last second" } )
-	end
+	Messages:Announce( "missed", { Reason = nil, Message = "Missed a pass" } )
+	-- end
 end
