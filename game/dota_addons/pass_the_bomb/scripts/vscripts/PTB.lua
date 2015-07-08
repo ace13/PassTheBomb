@@ -43,10 +43,7 @@ function PTB:Init()
 
 	Messages:Init()
 	PlayerRegistry:Init()
-
-	Teams:AddTeam( DOTA_TEAM_GOODGUYS, "Temporary Team", Vector( 255, 255, 255 ), 10 )
-	-- Teams:Init() -- TODO: Move team initialization to earlier
-
+	Teams:Init()
 
 	PTB.LastTick = GameRules:GetGameTime()
 	PTB.ModeNames = {
@@ -84,19 +81,6 @@ function PTB:Init()
 	end )
 
 	PTB:AddStateHandler( DOTA_GAMERULES_STATE_PRE_GAME, function() 
-		Timers:CreateTimer( function()
-			-- Await all players to spawn
-			for i = 0, PlayerResource:GetPlayerCount() - 1 do
-				local ply = PlayerResource:GetPlayer( i )
-				if not ply or not ply.Player then
-					return 0.5
-				end
-			end
-
-			-- Reassign teams
-			PTB:_EnsureTeams()
-		end )
-
 		Messages:Display( "First round starts in " .. PTB.NewMatchTime .. " seconds!", { Type = MESSAGE_CENTER, Duration = 5 } )
 	end )
 
@@ -105,9 +89,6 @@ function PTB:Init()
 	end )
 
 	-- Game rules
-	-- TODO: Move team initialization earlier
-	GameRules:SetCustomGameTeamMaxPlayers( DOTA_TEAM_GOODGUYS, 10 )
-	GameRules:SetCustomGameTeamMaxPlayers( DOTA_TEAM_BADGUYS, 0 )
 	GameRules:SetCustomVictoryMessage( "Boom! Hahahaha" )
 
 	GameRules:SetGoldPerTick( 0 )
@@ -328,22 +309,6 @@ function PTB:TestingClients()
 			end
 		end
 	end )
-end
-
-
---[[
---   Helper functions
---]]
-
-function PTB:_EnsureTeams()
-	Teams:Init()
-	CustomGameEventManager:Send_ServerToAllClients( "ptb_teams_changed", { } )
-
-	for _, ply in pairs( PlayerRegistry:GetAllPlayers() ) do
-		ply:SetTeam( Teams:FindFirstFreeTeam().ID )
-
-		ply.HeroEntity:RespawnHero( false, true, false )
-	end
 end
 
 
