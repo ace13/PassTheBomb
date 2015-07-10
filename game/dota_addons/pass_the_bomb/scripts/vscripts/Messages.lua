@@ -4,6 +4,7 @@ MESSAGE_TOP = 0
 MESSAGE_CENTER = 1
 MESSAGE_BOTTOM = 2
 MESSAGE_TICKER = 3
+MESSAGE_CHAT = 4
 
 SYMBOL_PRE_PLUS = 0
 SYMBOL_PRE_MINUS = 1
@@ -33,9 +34,6 @@ local function ColToHex( color )
 	return string.format( "%x%x%x", color[ 1 ], color[ 2 ], color[ 3 ] )
 end
 
-local function ColToLong( color )
-	return 0 -- TODO
-end
 
 --[[
 --   Initializer functions
@@ -51,11 +49,11 @@ end
 --]]
 
 function Messages:Display( message, data )
-	data = data or {}
+	data = type( data ) == "table" and data or {}
 
 	local time = data.Duration and tonumber( data.Duration ) or 1
-	local where = data.Type and tonumber( data.Type ) or MESSAGE_BOTTOM
-	local color = data.Color or Vector( 255, 255, 255 )
+	local where = data.Type and tonumber( data.Type ) or MESSAGE_CHAT
+	local color = data.Color or Vector( 255, 255, 255 ) -- type( data.Color ) == "vector" ? 
 
 	print( "TODO: Messages:Display" )
 	if where == MESSAGE_TICKER then
@@ -63,11 +61,16 @@ function Messages:Display( message, data )
 			message = "<font color=\"#" .. ColToHex( color )  .. "\">" .. message .. "</font>"
 		end
 		SendCustomMessage( message, -1, 1 )
-	else
-		data.Message = message
-		if data.Color then data.Color = ColToLong( color ) end
-		-- FireGameEvent( "HudMessage", data ) 
+	elseif where == MESSAGE_CHAT then
 		Say( nil, message, false )
+	else
+		toSend = {
+			message = tostring(message),
+			duration = time,
+			color = color,
+			type = where
+		}
+		FireGameEvent( "ptb_uimessage", toSend )
 	end
 end
 
@@ -83,14 +86,14 @@ function Messages:Number( data )
 	local presymbol  = data.PreSymbol and tonumber( data.PreSymbol ) or nil
 	local postsymbol = data.PostSymbol and tonumber( data.PostSymbol ) or nil
 	local path       = "particles/msg_fx/msg_" .. fx_file .. ".vpcf"
-        local particle   = ParticleManager:CreateParticle( path, PATTACH_ABSORIGIN_FOLLOW, target )
+	local particle   = ParticleManager:CreateParticle( path, PATTACH_ABSORIGIN_FOLLOW, target )
 
 	local digits = 0
 	if number ~= nil then digits = #tostring( number ) end
 	if presymbol ~= nil then digits = digits + 1 end
 	if postsymbol ~= nil then digits = digits + 1 end
 
-        ParticleManager:SetParticleControl( particle, 1, Vector( presymbol, number, postsymbol ) )
+	ParticleManager:SetParticleControl( particle, 1, Vector( presymbol, number, postsymbol ) )
 	ParticleManager:SetParticleControl( particle, 2, Vector( duration, digits, 0 ) )
 	ParticleManager:SetParticleControl( particle, 3, color )
 end

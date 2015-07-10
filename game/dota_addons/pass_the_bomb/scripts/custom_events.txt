@@ -20,10 +20,6 @@
 
 "CustomEvents"
 {
-	"ptb_teams_changed"
-	{
-	}
-
 	"ptb_bomb_passed"
 	{
 		"old_carrier" "short"
@@ -37,10 +33,11 @@
 		"bomb"    "short"
 	}
 
-	"ptb_hud_message"
+	"ptb_uimessage"
 	{
 		"message"  "string"
 		"duration" "float"
-		"color"    "long"
+		"color"    "string"
+		"type"     "byte"
 	}
 }

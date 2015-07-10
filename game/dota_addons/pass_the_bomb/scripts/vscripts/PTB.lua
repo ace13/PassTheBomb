@@ -81,7 +81,7 @@ function PTB:Init()
 	end )
 
 	PTB:AddStateHandler( DOTA_GAMERULES_STATE_PRE_GAME, function() 
-		Messages:Display( "First round starts in " .. PTB.NewMatchTime .. " seconds!", { Type = MESSAGE_CENTER, Duration = 5 } )
+		Messages:Display( "First round starts in " .. math.floor( PTB.NewMatchTime ) .. " seconds!", { Type = MESSAGE_CENTER, Duration = ( PTB.NewMatchTime < 5 ) and PTB.NewMatchTime or 5 } )
 	end )
 
 	PTB:AddStateHandler( DOTA_GAMERULES_STATE_GAME_IN_PROGRESS, function() 
@@ -128,8 +128,8 @@ end
 function PTB:PickMode()
 	if #PTB.Modes < 3 then
 		if #PTB.Modes == 2 then
-			for k, v in pairs( PTB.Modes ) do
-				if k ~= PTB.LastMode then
+			for _, v in pairs( PTB.Modes ) do
+				if v ~= PTB.LastMode then
 					return v
 				end
 			end
@@ -165,13 +165,13 @@ function PTB:BeginRound( skip_time )
 	PTB.CurMode:Init()
 
 	if not skip_time then
-		--PTB.Bomb:Drop()
+		--PTB.Bomb:Drop() -- Drop bomb in middle?
 		
-		Messages:Display( string.format( "%s mode starts in %d seconds.", PTB.CurMode.Name, PTB.NewRoundTime ) )
+		Messages:Display( string.format( "%s mode starts in %d seconds.", PTB.CurMode.Name, math.floor( PTB.NewRoundTime ) ), { Type = MESSAGE_TOP, Duration = ( PTB.NewRoundTime < 4 ) and PTB.NewRoundTime or 4 } )
 	end
 
 	Timers:CreateTimer( skip_time and 0 or PTB.NewRoundTime, function() 
-		Messages:Display( PTB.CurMode.Name .. " mode!", { Type = MESSAGE_CENTER, Duration = 4 } )
+		Messages:Display( PTB.CurMode.Name .. " mode, go!", { Type = MESSAGE_CENTER, Duration = 1 } )
 
 		PTB.Bomb:Take()
 		PTB.State = STATE_ROUND
@@ -200,21 +200,19 @@ function PTB:EndRound()
 	local alive = PlayerRegistry:GetAlivePlayers()
 	if #alive == 1 then
 		local survivor = alive[ 1 ]
-		Say( nil, survivor.Name .. " survived this round!", false )
-		Say( nil, "Next match starts in " .. math.floor( PTB.NewMatchTime ) .. " seconds.", false )
-
 		survivor.Score = survivor.Score + 1
 		survivor.HeroEntity:HeroLevelUp( true )
 
 		if survivor.Score >= PTB.RoundLimit then
-			Say( nil, survivor.Name .. " has proven to be a cockroach by surviving " .. PTB.RoundLimit .. " matches!", false )
+			Message:Display( survivor.Name .. " has proven to be a cockroach by surviving " .. PTB.RoundLimit .. " matches!", { Type = MESSAGE_CENTER, Duration = 5 } )
 			Timers:CreateTimer( 1, function() 
 				GameRules:SetGameWinner( survivor.Team )
 			end )
+		else
+			Message:Display( survivor.Name .. " survived this round!\nNext match starts in " .. math.floor( PTB.NewMatchTime ) .. " seconds.", { Type = MESSAGE_CENTER, Duration = ( PTB.NewMatchTime < 4 ) and PTB.NewMatchTime or 4 } )
 		end
 	elseif #alive == 0 then
-		Say( nil, "You all died, that's pretty sad.", false )
-		Say( nil, "Next match starts in " .. math.floor( PTB.NewMatchTime ) .. " seconds.", false )
+		Message:Display( "You all died? That's sad.\nNew match in " .. math.floor( PTB.NewMatchTime ) .. " seconds.", { Type = MESSAGE_CENTER, Duration = ( PTB.NewMatchTime < 4 ) and PTB.NewMatchTime or 4 } )
 	end
 
 	if #alive <= 1 then
@@ -316,11 +314,11 @@ end
 --   Event handling
 --]]
 
-function PTB:EventBombPassed( event )
-	print( "PTB:EventBombPassed" )
+function PTB:EventBombExploded( event )
+	print( "PTB:EventBombExploded" )
 	-- PrintTable( event )
 
-	local carrier = PlayerRegistry:GetPlayer( { UserID = event.new_carrier } )
+	local carrier = PlayerRegistry:GetPlayer( { UserID = event.carrier } )
 	local bomb = Bombs.Find( event.bomb )
 
 	if not bomb.LastCarrier then
@@ -334,9 +332,9 @@ function PTB:EventBombPassed( event )
 
 	local carrier = PlayerRegistry:GetPlayer( { UserID = event.new_carrier } )
 	if event.old_carrier == -1 then
-		Messages:Display( carrier.Name .. " has the bomb!", { Type = MESSAGE_BOTTOM, Duration = 2 } )
+		Messages:Display( carrier.Name .. " has the bomb!", { Type = MESSAGE_CENTER, Duration = 2 } )
 	else
-		Messages:Display( carrier.Name .. " got the bomb!", { Type = MESSAGE_BOTTOM } )
+		Messages:Display( carrier.Name .. " got the bomb!", { Type = MESSAGE_TOP } )
 	end
 
 	local bomb = Bombs.Find( event.bomb )
@@ -421,7 +419,6 @@ function PTB:EventPlayerConnected( event )
 
 end
 
-local playerCount = 0
 function PTB:EventPlayerJoined( event )
 	print( "PTB:EventPlayerJoined" )
 	-- PrintTable( event )
